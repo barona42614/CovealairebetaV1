@@ -1,0 +1,3736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<title>Creador de Contenido CV al Aire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.0/index.min.css" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: clamp(10px, 3vw, 20px);
+    overflow-x: hidden;
+  }
+
+  /* ============================================ */
+  /* MODO PÚBLICO (SIN LOGIN) */
+  /* ============================================ */
+  body.public-mode {
+    padding: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  body.public-mode .login-screen,
+  body.public-mode .header,
+  body.public-mode .container,
+  body.public-mode .toast,
+  body.public-mode .goal-overlay {
+    display: none !important;
+  }
+  body.public-mode #publicScoreboard {
+    display: block !important;
+  }
+
+  #publicScoreboard {
+    display: none;
+    width: 100%;
+    max-width: 1920px;
+  }
+
+  /* Contenedor 16:9 con fondo de estadio */
+  .public-container-16-9 {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    overflow: hidden;
+  }
+
+  /* Fondo del estadio */
+  .public-stadium-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /* Overlay oscuro */
+  .public-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.5) 100%);
+  }
+
+  /* Marcador superpuesto - estilo del video */
+  .public-scoreboard-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 900px;
+    background: linear-gradient(145deg, rgba(10,60,30,0.95), rgba(5,40,20,0.95));
+    border: 2px solid #d4af37;
+    border-radius: 12px;
+    padding: clamp(15px, 2vw, 25px);
+    box-shadow: 0 10px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212,175,55,0.3);
+    z-index: 10;
+  }
+
+  .scoreboard-top-title {
+    text-align: center;
+    font-size: clamp(10px, 1.2vw, 14px);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: clamp(10px, 1.5vw, 18px);
+  }
+
+  .scoreboard-teams-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: clamp(10px, 2vw, 20px);
+    align-items: center;
+    margin-bottom: clamp(10px, 1.5vw, 15px);
+  }
+
+  .scoreboard-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(4px, 0.5vw, 8px);
+  }
+
+  .scoreboard-team-crest {
+    width: clamp(50px, 7vw, 90px);
+    height: clamp(50px, 7vw, 90px);
+    border-radius: 50%;
+    background: #fff;
+    padding: clamp(3px, 0.4vw, 6px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 15px rgba(212,175,55,0.4);
+    border: 2px solid #d4af37;
+    object-fit: contain;
+  }
+
+  .scoreboard-team-name {
+    font-size: clamp(10px, 1.3vw, 16px);
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    text-align: center;
+  }
+
+  .scoreboard-vs {
+    font-size: clamp(20px, 3vw, 36px);
+    font-weight: 900;
+    color: #d4af37;
+    text-shadow: 0 0 15px rgba(212,175,55,0.7);
+  }
+
+  .scoreboard-scores-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(10px, 2vw, 20px);
+    margin-bottom: clamp(10px, 1.5vw, 15px);
+  }
+
+  .scoreboard-score {
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(212,175,55,0.5);
+    line-height: 1;
+    transition: all 0.3s;
+  }
+
+  .scoreboard-score.goal-scored {
+    animation: goalScoreAnim 0.8s ease-out;
+    color: #f4d03f;
+    text-shadow: 0 0 40px rgba(244,208,63,0.9);
+  }
+
+  @keyframes goalScoreAnim {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3); color: #f4d03f; }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); color: #fff; }
+  }
+
+  .scoreboard-timer-box {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 8px;
+    padding: clamp(8px, 1vw, 15px);
+    text-align: center;
+  }
+
+  .scoreboard-half-label {
+    font-size: clamp(9px, 1vw, 13px);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .scoreboard-timer {
+    font-size: clamp(28px, 4vw, 56px);
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Poppins', monospace;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(212,175,55,0.6);
+  }
+
+  .scoreboard-timer.running {
+    animation: timerGlow 1s ease-in-out infinite;
+  }
+
+  @keyframes timerGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(212,175,55,0.6); }
+    50% { text-shadow: 0 0 35px rgba(212,175,55,1), 0 0 50px rgba(212,175,55,0.7); }
+  }
+
+  .public-debug {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #d4af37;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 11px;
+    color: #d4af37;
+    z-index: 9999;
+    max-width: 200px;
+  }
+  .public-debug button {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    margin: 2px;
+  }
+
+  /* ============================================ */
+  /* ESTILOS NORMALES DE LA APP */
+  /* ============================================ */
+  .header {
+    position: relative;
+    border-radius: clamp(12px, 3vw, 20px);
+    overflow: hidden;
+    margin-bottom: clamp(15px, 3vw, 30px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 2px solid #d4af37;
+  }
+  .header img {
+    width: 100%;
+    height: clamp(100px, 20vw, 200px);
+    object-fit: cover;
+    display: block;
+  }
+  .header-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: clamp(12px, 3vw, 25px) clamp(15px, 4vw, 30px);
+  }
+  .header-title {
+    font-size: clamp(1rem, 4vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: clamp(1px, 0.5vw, 3px);
+    color: #fff;
+    text-shadow: 0 0 20px rgba(212,175,55,0.8);
+    line-height: 1.2;
+  }
+  .header-title span { color: #d4af37; }
+  .header-subtitle {
+    font-size: clamp(0.6rem, 2vw, 0.9rem);
+    color: #d4af37;
+    letter-spacing: clamp(2px, 1vw, 5px);
+    margin-top: 5px;
+    text-transform: uppercase;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; width: 100%; }
+
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: clamp(15px, 3vw, 25px);
+    background: rgba(26,26,26,0.8);
+    border: 1px solid #2a2a2a;
+    border-radius: clamp(10px, 2.5vw, 15px);
+    padding: clamp(6px, 1.5vw, 10px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-tab {
+    flex: 1;
+    min-width: 120px;
+    background: transparent;
+    color: #888;
+    border: 2px solid transparent;
+    padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 20px);
+    border-radius: clamp(8px, 2vw, 12px);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(0.75rem, 2.2vw, 0.9rem);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    white-space: nowrap;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .nav-tab:hover { color: #d4af37; background: rgba(212,175,55,0.05); }
+  .nav-tab.active {
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    color: #000;
+    border-color: #d4af37;
+    box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+  }
+  .nav-tab .tab-icon { font-size: clamp(1rem, 2.5vw, 1.2rem); }
+
+  .panel {
+    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    border-radius: clamp(12px, 3vw, 20px);
+    padding: clamp(15px, 4vw, 30px);
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    display: none;
+  }
+  .panel.active { display: block; animation: fadeInPanel 0.4s ease; }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #d4af37, #f4d03f, #d4af37);
+  }
+  .panel-title {
+    font-size: clamp(1rem, 4vw, 1.4rem);
+    font-weight: 800;
+    margin-bottom: clamp(15px, 3vw, 25px);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-title::before {
+    content: '';
+    width: 8px;
+    height: 24px;
+    background: #d4af37;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  @keyframes fadeInPanel {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .user-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(212,175,55,0.08);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 10px;
+    padding: clamp(8px, 2vw, 12px);
+    margin-bottom: clamp(12px, 3vw, 20px);
+    flex-wrap: wrap;
+  }
+  .user-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .user-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1.1rem; color: #000;
+    flex-shrink: 0;
+  }
+  .user-details { flex: 1; min-width: 0; }
+  .user-name {
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    font-weight: 700; color: #fff;
+    text-transform: capitalize;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .user-role {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+    color: #d4af37; text-transform: uppercase;
+    letter-spacing: 1px; font-weight: 600;
+  }
+  .user-role.admin { color: #f4d03f; }
+  .user-role.user { color: #aaa; }
+  .user-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-user {
+    background: rgba(255,255,255,0.05);
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 36px;
+    touch-action: manipulation;
+    white-space: nowrap;
+  }
+  .btn-user:hover, .btn-user:active { background: #d4af37; color: #000; }
+  .btn-user.logout {
+    background: rgba(200,16,46,0.15);
+    color: #c8102e;
+    border-color: #c8102e;
+  }
+  .btn-user.logout:hover, .btn-user.logout:active { background: #c8102e; color: #fff; }
+
+  .login-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    z-index: 5000;
+    display: flex; justify-content: center; align-items: center;
+    padding: clamp(15px, 4vw, 20px);
+  }
+  .login-screen.hidden { display: none; }
+  .login-box {
+    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    border: 2px solid #d4af37;
+    border-radius: clamp(15px, 4vw, 20px);
+    padding: clamp(20px, 5vw, 35px);
+    max-width: 420px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  }
+  .login-logo {
+    width: 140px; height: 140px;
+    margin: 0 auto 15px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+  }
+  .login-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .login-title {
+    text-align: center;
+    font-size: clamp(1.3rem, 4vw, 1.6rem);
+    font-weight: 900; color: #fff;
+    margin-bottom: 5px; letter-spacing: 1px;
+  }
+  .login-title span { color: #d4af37; }
+  .login-subtitle {
+    text-align: center;
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: clamp(20px, 5vw, 30px);
+  }
+  .login-field { margin-bottom: clamp(12px, 3vw, 18px); }
+  .login-field label {
+    display: block;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: clamp(12px, 3vw, 14px);
+    border-radius: 10px;
+    font-family: inherit; font-size: 16px;
+    transition: all 0.3s;
+  }
+  .login-field input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(255,255,255,0.1);
+  }
+  .login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    color: #000; border: none;
+    padding: clamp(12px, 3vw, 14px);
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    cursor: pointer;
+    text-transform: uppercase; letter-spacing: 2px;
+    transition: all 0.3s;
+    min-height: 50px; margin-top: 5px;
+  }
+  .login-btn:hover, .login-btn:active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(212,175,55,0.3);
+  }
+  .login-error {
+    background: rgba(200,16,46,0.15);
+    border: 1px solid #c8102e;
+    color: #ff6b7a;
+    padding: 10px; border-radius: 8px;
+    font-size: 0.85rem; margin-bottom: 15px;
+    display: none; text-align: center;
+  }
+  .login-error.show { display: block; }
+  .login-footer {
+    text-align: center; margin-top: 20px;
+    font-size: 0.75rem; color: #666;
+  }
+
+  .canvas-section { margin-bottom: clamp(15px, 3vw, 25px); }
+  .canvas-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: clamp(8px, 2vw, 12px);
+    flex-wrap: wrap;
+  }
+  .canvas-section-title {
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .btn-canvas-config {
+    background: linear-gradient(135deg, #1a5c35, #0d3b1f);
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 14px);
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.3s;
+    min-height: 36px; touch-action: manipulation;
+  }
+  .btn-canvas-config:hover, .btn-canvas-config:active { background: #d4af37; color: #000; }
+  .canvas-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: clamp(8px, 2vw, 12px);
+  }
+  .canvas-option {
+    background: rgba(255,255,255,0.03);
+    border: 2px solid #2a2a2a;
+    border-radius: clamp(8px, 2vw, 12px);
+    padding: clamp(8px, 2vw, 12px);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center; touch-action: manipulation;
+  }
+  .canvas-option:hover, .canvas-option:active {
+    border-color: #d4af37;
+    background: rgba(212,175,55,0.05);
+    transform: translateY(-2px);
+  }
+  .canvas-option.selected {
+    border-color: #d4af37;
+    background: rgba(212,175,55,0.1);
+    box-shadow: 0 0 20px rgba(212,175,55,0.3);
+  }
+  .canvas-preview {
+    width: 100%;
+    aspect-ratio: 1080/1350;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    background: #000;
+  }
+  .canvas-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .canvas-name {
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+    font-weight: 700; color: #fff;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .canvas-option.selected .canvas-name { color: #d4af37; }
+
+  .dynamic-section { transition: all 0.3s ease; }
+  .dynamic-section.hidden { display: none !important; }
+
+  .teams-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(8px, 2vw, 15px);
+    margin-bottom: clamp(12px, 3vw, 20px);
+  }
+  .team-selector { display: flex; flex-direction: column; gap: 8px; }
+  .team-selector label {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .team-button {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid #2a2a2a;
+    border-radius: clamp(8px, 2vw, 12px);
+    padding: clamp(8px, 2vw, 12px);
+    cursor: pointer;
+    display: flex; align-items: center; gap: clamp(8px, 2vw, 12px);
+    transition: all 0.3s;
+    min-height: clamp(70px, 15vw, 80px);
+    touch-action: manipulation;
+  }
+  .team-button:hover, .team-button:active {
+    border-color: #d4af37;
+    background: rgba(212,175,55,0.05);
+    transform: translateY(-2px);
+  }
+  .team-button img {
+    width: clamp(40px, 10vw, 55px);
+    height: clamp(40px, 10vw, 55px);
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff; padding: 4px;
+    flex-shrink: 0;
+  }
+  .team-button .team-info { flex: 1; min-width: 0; }
+  .team-button .team-name {
+    font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+    font-weight: 700; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .team-button .team-hint {
+    font-size: clamp(0.6rem, 1.8vw, 0.7rem);
+    color: #888; margin-top: 2px;
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(10px, 2.5vw, 15px);
+    margin-bottom: clamp(12px, 3vw, 20px);
+  }
+  .control-field { display: flex; flex-direction: column; gap: 6px; }
+  .control-field label {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .control-field input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: clamp(10px, 2.5vw, 12px);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    transition: all 0.3s;
+    width: 100%;
+    -webkit-appearance: none; appearance: none;
+  }
+  .control-field input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(255,255,255,0.1);
+  }
+  .control-field.full { grid-column: 1 / -1; }
+
+  .action-bar {
+    display: flex; gap: 10px;
+    margin-top: clamp(12px, 3vw, 20px);
+    flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1; min-width: 140px;
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    color: #000; border: none;
+    padding: clamp(12px, 3vw, 14px) clamp(15px, 4vw, 20px);
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+    cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.3s;
+    min-height: 48px; touch-action: manipulation;
+    white-space: nowrap;
+  }
+  .btn:hover, .btn:active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(212,175,55,0.3);
+  }
+  .btn.secondary {
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    color: #d4af37;
+    border: 1px solid #d4af37;
+  }
+  .btn.secondary:hover, .btn.secondary:active { background: #d4af37; color: #000; }
+  .btn.manage {
+    background: linear-gradient(135deg, #1a5c35, #0d3b1f);
+    color: #d4af37;
+    border: 1px solid #d4af37;
+  }
+  .btn.manage:hover, .btn.manage:active { background: #d4af37; color: #000; }
+  .btn.danger {
+    background: linear-gradient(135deg, #c8102e, #8b0000);
+    color: #fff;
+  }
+  .btn.danger:hover, .btn.danger:active { background: #c8102e; }
+  .btn.success {
+    background: linear-gradient(135deg, #28a745, #1a7a35);
+    color: #fff;
+  }
+  .btn.success:hover, .btn.success:active { background: #28a745; }
+  .btn.copy-link {
+    background: linear-gradient(135deg, #2196f3, #1565c0);
+    color: #fff;
+  }
+  .btn.copy-link:hover, .btn.copy-link:active { background: #2196f3; }
+
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 1000;
+    justify-content: center; align-items: center;
+    padding: clamp(10px, 3vw, 20px);
+    overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-content {
+    background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+    border: 2px solid #d4af37;
+    border-radius: clamp(12px, 3vw, 20px);
+    padding: clamp(15px, 4vw, 30px);
+    max-width: 600px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-title {
+    font-size: clamp(1.1rem, 4vw, 1.5rem);
+    font-weight: 800; color: #d4af37;
+    margin-bottom: clamp(12px, 3vw, 20px);
+    text-align: center; padding-right: 40px;
+  }
+  .modal-close {
+    position: absolute; top: 15px; right: 15px;
+    background: #d4af37; color: #000; border: none;
+    width: 35px; height: 35px;
+    border-radius: 50%;
+    font-size: 1.3rem; cursor: pointer;
+    font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10; min-width: 44px; min-height: 44px;
+  }
+
+  .team-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+    gap: clamp(8px, 2vw, 10px);
+  }
+  .team-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: clamp(8px, 2vw, 10px);
+    background: rgba(255,255,255,0.05);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer; transition: all 0.3s;
+    min-height: 48px; touch-action: manipulation;
+  }
+  .team-option:hover, .team-option:active {
+    background: rgba(212,175,55,0.1);
+    border-color: #d4af37;
+    transform: translateY(-2px);
+  }
+  .team-option img {
+    width: clamp(35px, 8vw, 45px);
+    height: clamp(35px, 8vw, 45px);
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff; padding: 4px;
+    flex-shrink: 0;
+  }
+  .team-option-name {
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+    font-weight: 600; color: #fff;
+    line-height: 1.2;
+  }
+
+  .manage-header {
+    display: flex; gap: 10px;
+    margin-bottom: clamp(15px, 3vw, 20px);
+    flex-wrap: wrap;
+  }
+  .manage-header .btn {
+    flex: 1; min-width: 120px;
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    padding: clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
+  }
+  .manage-form {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: clamp(12px, 3vw, 20px);
+    margin-bottom: clamp(15px, 3vw, 25px);
+  }
+  .manage-form-title {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    font-weight: 700; color: #d4af37;
+    margin-bottom: clamp(10px, 2.5vw, 15px);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .form-group { margin-bottom: clamp(10px, 2.5vw, 15px); }
+  .form-group label {
+    display: block;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    color: #d4af37;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: clamp(10px, 2.5vw, 12px);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    transition: all 0.3s;
+  }
+  .form-group select { cursor: pointer; }
+  .form-group select option { background: #1a1a1a; color: #fff; }
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(255,255,255,0.1);
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .form-actions {
+    display: flex; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .form-actions .btn { flex: 1; min-width: 120px; }
+
+  .fields-config {
+    background: rgba(212,175,55,0.05);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 12px;
+    padding: clamp(12px, 3vw, 16px);
+    margin-bottom: clamp(15px, 3vw, 20px);
+  }
+  .fields-config-title {
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+    font-weight: 700; color: #d4af37;
+    margin-bottom: clamp(10px, 2.5vw, 12px);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  .field-checkbox {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    cursor: pointer; transition: all 0.3s;
+    user-select: none;
+  }
+  .field-checkbox:hover {
+    border-color: #d4af37;
+    background: rgba(212,175,55,0.05);
+  }
+  .field-checkbox input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: #d4af37;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .field-checkbox span {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    color: #fff; font-weight: 600;
+  }
+
+  .all-items-section { margin-top: clamp(15px, 3vw, 20px); }
+  .all-items-title {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    font-weight: 700; color: #d4af37;
+    margin-bottom: clamp(10px, 2.5vw, 15px);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .all-items-count {
+    background: #d4af37; color: #000;
+    padding: 2px 10px; border-radius: 12px;
+    font-size: 0.75rem; font-weight: 700;
+  }
+  .item-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: clamp(8px, 2vw, 12px);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    margin-bottom: 8px; transition: all 0.3s;
+  }
+  .item-card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: #3a3a3a;
+  }
+  .item-preview {
+    width: clamp(45px, 10vw, 60px);
+    height: clamp(56px, 12.5vw, 75px);
+    border-radius: 6px; overflow: hidden;
+    background: #000; flex-shrink: 0;
+  }
+  .item-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    font-weight: 600; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .item-details {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+    color: #888;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    margin-top: 2px;
+  }
+  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    min-width: 44px; min-height: 44px;
+    border: 1px solid;
+  }
+  .btn-edit {
+    background: rgba(33,150,243,0.2);
+    color: #2196f3; border-color: #2196f3;
+  }
+  .btn-edit:hover, .btn-edit:active { background: #2196f3; color: #fff; }
+  .btn-delete {
+    background: rgba(200,16,46,0.2);
+    color: #c8102e; border-color: #c8102e;
+  }
+  .btn-delete:hover, .btn-delete:active { background: #c8102e; color: #fff; }
+
+  .empty-state {
+    text-align: center;
+    padding: clamp(20px, 5vw, 30px);
+    color: #888;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    font-style: italic;
+  }
+
+  .profile-section {
+    background: rgba(212,175,55,0.05);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 12px;
+    padding: clamp(15px, 3vw, 20px);
+    margin-bottom: clamp(15px, 3vw, 20px);
+  }
+  .profile-header {
+    display: flex; align-items: center; gap: 15px;
+    margin-bottom: 15px;
+  }
+  .profile-avatar {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1.8rem; color: #000;
+    flex-shrink: 0;
+  }
+  .profile-info h3 {
+    font-size: 1.2rem; font-weight: 800; color: #fff;
+    text-transform: capitalize; margin-bottom: 4px;
+  }
+  .profile-role-badge {
+    display: inline-block;
+    background: #d4af37; color: #000;
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .profile-role-badge.user { background: #555; color: #fff; }
+
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: clamp(8px, 2vw, 12px);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    margin-bottom: 8px; transition: all 0.3s;
+  }
+  .user-card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: #3a3a3a;
+  }
+  .user-card-avatar {
+    width: clamp(40px, 9vw, 50px);
+    height: clamp(40px, 9vw, 50px);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1.2rem; color: #000;
+    flex-shrink: 0;
+  }
+  .user-card-info { flex: 1; min-width: 0; }
+  .user-card-name {
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    font-weight: 700; color: #fff;
+    text-transform: capitalize;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .user-card-details {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+    color: #888; margin-top: 2px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .user-card-details span { display: inline-flex; align-items: center; gap: 4px; }
+  .role-tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .role-tag.admin {
+    background: rgba(212,175,55,0.2);
+    color: #d4af37; border: 1px solid #d4af37;
+  }
+  .role-tag.user {
+    background: rgba(136,136,136,0.2);
+    color: #aaa; border: 1px solid #555;
+  }
+
+  .preview-modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 2000;
+    justify-content: center; align-items: center;
+    padding: clamp(10px, 3vw, 20px);
+    overflow-y: auto;
+  }
+  .preview-modal.show { display: flex; }
+  .preview-content {
+    background: #1a1a1a;
+    border: 2px solid #d4af37;
+    border-radius: clamp(12px, 3vw, 20px);
+    padding: clamp(12px, 3vw, 20px);
+    max-width: min(95%, 600px);
+    width: 100%;
+    max-height: 95vh;
+    overflow: auto;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+  }
+  .preview-content img {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    display: block;
+    margin: 0 auto;
+  }
+  .preview-title {
+    color: #d4af37;
+    font-size: clamp(1rem, 3.5vw, 1.2rem);
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .preview-hint {
+    color: #aaa;
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    margin-bottom: clamp(10px, 2.5vw, 15px);
+    font-style: italic;
+    padding: 0 10px;
+  }
+  .preview-actions {
+    margin-top: clamp(10px, 2.5vw, 15px);
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .preview-actions .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    padding: clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: clamp(15px, 3vw, 30px);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #d4af37;
+    color: #000;
+    padding: clamp(10px, 2.5vw, 12px) clamp(15px, 4vw, 24px);
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: transform 0.4s;
+    z-index: 3000;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* STREAM PANEL */
+  .stream-container {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 25px);
+  }
+  
+  .scoreboard {
+    background: linear-gradient(145deg, #0d3b1f, #062615);
+    border: 3px solid #d4af37;
+    border-radius: clamp(12px, 3vw, 20px);
+    padding: clamp(15px, 4vw, 25px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.2);
+    position: relative;
+    overflow: hidden;
+    animation: scoreboardEnter 0.8s ease-out;
+  }
+  
+  @keyframes scoreboardEnter {
+    0% { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  
+  .scoreboard::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(212,175,55,0.05) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+    pointer-events: none;
+  }
+  
+  .scoreboard-header {
+    text-align: center;
+    margin-bottom: clamp(10px, 2vw, 15px);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .scoreboard-title {
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 700;
+    animation: titlePulse 2s ease-in-out infinite;
+  }
+  
+  .teams-display {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: clamp(10px, 2vw, 20px);
+    align-items: center;
+    margin-bottom: clamp(15px, 3vw, 20px);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .team-display {
+    text-align: center;
+    animation: teamSlideIn 0.6s ease-out;
+  }
+  
+  .team-display:first-child {
+    animation-delay: 0.2s;
+    animation-fill-mode: both;
+  }
+  
+  .team-display:last-child {
+    animation-delay: 0.4s;
+    animation-fill-mode: both;
+    animation-name: teamSlideInRight;
+  }
+  
+  @keyframes teamSlideIn {
+    0% { opacity: 0; transform: translateX(-20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes teamSlideInRight {
+    0% { opacity: 0; transform: translateX(20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  
+  .team-select-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(212,175,55,0.4);
+    border-radius: 12px;
+    padding: clamp(6px, 1.5vw, 10px);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: clamp(80px, 18vw, 110px);
+    touch-action: manipulation;
+  }
+  .team-select-btn:hover, .team-select-btn:active {
+    border-color: #d4af37;
+    background: rgba(212,175,55,0.1);
+    transform: translateY(-2px);
+  }
+  .team-select-btn img {
+    width: clamp(40px, 9vw, 60px);
+    height: clamp(40px, 9vw, 60px);
+    border-radius: 50%;
+    object-fit: contain;
+    background: #fff;
+    padding: 4px;
+  }
+  .team-select-btn .team-label {
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .team-select-btn .team-hint {
+    font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+    color: #888;
+  }
+  
+  .score-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 15px);
+    margin-top: 8px;
+  }
+  
+  .score-btn {
+    width: clamp(36px, 9vw, 50px);
+    height: clamp(36px, 9vw, 50px);
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: rgba(212,175,55,0.15);
+    color: #d4af37;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-radius: 50%;
+    background: rgba(212,175,55,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+  }
+  .score-btn:hover::before { width: 100%; height: 100%; }
+  .score-btn:hover, .score-btn:active {
+    background: #d4af37;
+    color: #000;
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(212,175,55,0.6);
+  }
+  .score-btn.minus {
+    border-color: #c8102e;
+    background: rgba(200,16,46,0.15);
+    color: #c8102e;
+  }
+  .score-btn.minus::before { background: rgba(200,16,46,0.3); }
+  .score-btn.minus:hover, .score-btn.minus:active {
+    background: #c8102e;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(200,16,46,0.6);
+  }
+  
+  .score-display {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 900;
+    color: #fff;
+    min-width: clamp(60px, 15vw, 80px);
+    text-align: center;
+    text-shadow: 0 0 20px rgba(212,175,55,0.5);
+    transition: all 0.3s;
+    position: relative;
+  }
+  
+  .score-display.goal-scored {
+    animation: goalAnimation 0.6s ease-out;
+    color: #f4d03f;
+    text-shadow: 0 0 30px rgba(244,208,63,0.8);
+  }
+  
+  @keyframes goalAnimation {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.4); color: #f4d03f; }
+    60% { transform: scale(0.9); }
+    100% { transform: scale(1); color: #fff; }
+  }
+  
+  .vs-divider {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 900;
+    color: #d4af37;
+    text-align: center;
+    animation: vsPulse 1.5s ease-in-out infinite;
+    text-shadow: 0 0 15px rgba(212,175,55,0.6);
+  }
+  
+  .timer-section {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(212,175,55,0.3);
+    border-radius: 12px;
+    padding: clamp(12px, 3vw, 20px);
+    margin-top: clamp(10px, 2vw, 15px);
+    position: relative;
+    z-index: 1;
+    animation: timerSlideUp 0.6s ease-out 0.6s both;
+  }
+  
+  @keyframes timerSlideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  .timer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: clamp(10px, 2vw, 15px);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .timer-title {
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .half-selector {
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  .half-btn {
+    background: transparent;
+    color: #888;
+    border: 2px solid transparent;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: clamp(0.75rem, 2vw, 0.85rem);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    touch-action: manipulation;
+  }
+
+  .half-btn:hover {
+    color: #d4af37;
+  }
+
+  .half-btn.active {
+    background: linear-gradient(135deg, #d4af37, #a8871f);
+    color: #000;
+    border-color: #d4af37;
+  }
+
+  .half-btn.active-second {
+    background: linear-gradient(135deg, #c8102e, #8b0000);
+    color: #fff;
+    border-color: #c8102e;
+  }
+  
+  .extra-time-badge {
+    background: #c8102e;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: none;
+    animation: badgePulse 1s infinite;
+    box-shadow: 0 0 15px rgba(200,16,46,0.6);
+  }
+  .extra-time-badge.show { display: inline-block; }
+  
+  .timer-display {
+    text-align: center;
+    margin-bottom: clamp(12px, 3vw, 18px);
+  }
+  
+  .timer-time {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 900;
+    color: #fff;
+    font-family: 'Poppins', monospace;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(212,175,55,0.5);
+    transition: all 0.3s;
+  }
+  
+  .timer-time.running {
+    animation: timerGlow 1s ease-in-out infinite;
+  }
+  
+  @keyframes timerGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+    50% { text-shadow: 0 0 30px rgba(212,175,55,0.9), 0 0 40px rgba(212,175,55,0.6); }
+  }
+  
+  .timer-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: clamp(12px, 3vw, 18px);
+  }
+  
+  .timer-controls .btn {
+    min-width: 100px;
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+    padding: clamp(10px, 2.5vw, 12px) clamp(15px, 3vw, 20px);
+  }
+  
+  .extra-time-section {
+    background: rgba(212,175,55,0.05);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 10px;
+    padding: clamp(10px, 2.5vw, 15px);
+  }
+  
+  .extra-time-title {
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .extra-time-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .extra-time-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: clamp(8px, 2vw, 12px);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    text-align: center;
+  }
+  .extra-time-input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(255,255,255,0.1);
+  }
+  
+  .extra-time-display {
+    text-align: center;
+    margin-top: 10px;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    color: #c8102e;
+    font-weight: 700;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .public-link-section {
+    background: rgba(33,150,243,0.08);
+    border: 2px solid #2196f3;
+    border-radius: 12px;
+    padding: clamp(12px, 3vw, 18px);
+    margin-bottom: clamp(15px, 3vw, 20px);
+  }
+  
+  .public-link-title {
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    color: #2196f3;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .public-link-url {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #2196f3;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    word-break: break-all;
+    margin-bottom: 10px;
+    user-select: all;
+  }
+  
+  .public-link-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .public-link-actions .btn {
+    min-width: 120px;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    padding: 10px 14px;
+  }
+
+  /* Selector de Estadio */
+  .stadium-selector-section {
+    background: rgba(212,175,55,0.08);
+    border: 2px solid #d4af37;
+    border-radius: 12px;
+    padding: clamp(12px, 3vw, 18px);
+    margin-bottom: clamp(15px, 3vw, 20px);
+  }
+  
+  .stadium-selector-title {
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    color: #d4af37;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stadium-select {
+    width: 100%;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #d4af37;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    cursor: pointer;
+  }
+  .stadium-select option {
+    background: #1a1a1a;
+    color: #fff;
+  }
+
+  .goal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 4000;
+    pointer-events: none;
+  }
+  
+  .goal-overlay.show {
+    display: flex;
+    animation: goalOverlayIn 0.3s ease-out;
+  }
+  
+  @keyframes goalOverlayIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  .goal-text {
+    font-size: clamp(4rem, 15vw, 8rem);
+    font-weight: 900;
+    color: #f4d03f;
+    text-transform: uppercase;
+    letter-spacing: 10px;
+    text-shadow: 0 0 40px rgba(244,208,63,0.8), 0 0 80px rgba(244,208,63,0.4);
+    animation: goalTextBounce 1s ease-out;
+    text-align: center;
+    white-space: pre-line;
+  }
+  
+  @keyframes goalTextBounce {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(5deg); }
+    70% { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  @media (max-width: 480px) {
+    .teams-row { grid-template-columns: 1fr; }
+    .controls-grid { grid-template-columns: 1fr; }
+    .team-button { min-height: 70px; }
+    .form-actions { flex-direction: column; }
+    .form-actions .btn { width: 100%; }
+    .manage-header { flex-direction: column; }
+    .manage-header .btn { width: 100%; }
+    .form-row { grid-template-columns: 1fr; }
+    .fields-grid { grid-template-columns: 1fr 1fr; }
+    .preview-actions { flex-direction: column; }
+    .preview-actions .btn { width: 100%; }
+    .nav-tabs { flex-wrap: nowrap; }
+    .nav-tab { min-width: 100px; font-size: 0.7rem; }
+    .teams-display { grid-template-columns: 1fr; gap: 10px; }
+    .vs-divider { padding: 5px 0; }
+    .public-teams { grid-template-columns: 1fr; gap: 15px; }
+    .public-vs { padding: 10px 0; }
+  }
+
+  @media (max-width: 360px) {
+    .header-title { font-size: 0.9rem; }
+    .panel-title { font-size: 0.95rem; }
+    .team-button .team-name { font-size: 0.7rem; }
+  }
+
+  .modal-content::-webkit-scrollbar,
+  .preview-content::-webkit-scrollbar { width: 6px; }
+  .modal-content::-webkit-scrollbar-thumb,
+  .preview-content::-webkit-scrollbar-thumb {
+    background: #d4af37; border-radius: 3px;
+  }
+  .modal-content::-webkit-scrollbar-track,
+  .preview-content::-webkit-scrollbar-track { background: #0f0f0f; }
+
+  @media screen and (max-width: 768px) {
+    input[type="text"], input[type="date"], input[type="time"], input[type="url"], input[type="number"], input[type="password"] {
+      font-size: 16px !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- VISTA PÚBLICA (SIN LOGIN) -->
+<!-- ============================================ -->
+<div id="publicScoreboard">
+  <div class="public-container-16-9">
+    <div class="public-stadium-bg" id="publicStadiumBg"></div>
+    <div class="public-overlay"></div>
+    
+    <div class="public-scoreboard-overlay">
+      <div class="scoreboard-top-title">⚽ MARCADOR EN VIVO - CV AL AIRE</div>
+      
+      <div class="scoreboard-teams-row">
+        <div class="scoreboard-team">
+          <img class="scoreboard-team-crest" id="publicCrest1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23d4af37'/%3E%3Ctext x='50' y='55' font-size='40' fill='%23000' text-anchor='middle' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" alt="Equipo 1" />
+          <div class="scoreboard-team-name" id="publicTeam1Name">Equipo Local</div>
+        </div>
+        <div class="scoreboard-vs">VS</div>
+        <div class="scoreboard-team">
+          <img class="scoreboard-team-crest" id="publicCrest2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23d4af37'/%3E%3Ctext x='50' y='55' font-size='40' fill='%23000' text-anchor='middle' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" alt="Equipo 2" />
+          <div class="scoreboard-team-name" id="publicTeam2Name">Equipo Visitante</div>
+        </div>
+      </div>
+      
+      <div class="scoreboard-scores-row">
+        <div class="scoreboard-score" id="publicScore1">0</div>
+        <div class="scoreboard-score" id="publicScore2">0</div>
+      </div>
+      
+      <div class="scoreboard-timer-box">
+        <div class="scoreboard-half-label" id="publicHalfLabel">1ER TIEMPO</div>
+        <div class="scoreboard-timer" id="publicTimer">00:00</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="public-debug" id="publicDebug">
+    <div style="margin-bottom:4px;">🔧 Modo Público</div>
+    <div>Última sync: <span id="debugLastSync">-</span></div>
+    <button onclick="forcePublicRefresh()">🔄 Forzar</button>
+    <button onclick="simulateGoal()"> Gol Test</button>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- APP PRINCIPAL -->
+<!-- ============================================ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="https://raw.githubusercontent.com/barona42614/GESTORCONTECV/ef626172d336b0f931fb8a301868321880dbdfc5/logo.svg" alt="CV al Aire Logo" />
+    </div>
+    <div class="login-title">CV AL <span>AIRE</span></div>
+    <div class="login-subtitle">Iniciar Sesión</div>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ingresa tu usuario" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="Ingresa tu contraseña" autocomplete="current-password" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 Ingresar</button>
+    <div class="login-footer">Creador de Contenido CV al Aire © 2026</div>
+  </div>
+</div>
+
+<div id="mainApp" style="display: none;">
+  <div class="header">
+    <img src="https://image.qwenlm.ai/public_source/3144d601-d429-4d44-9ae3-3dcc65a2d860/1836933eb-f645-48db-82cb-b9838d2560bd.png" alt="CV al Aire" />
+    <div class="header-overlay">
+      <div>
+        <div class="header-title">CREADOR DE CONTENIDO <span>CV AL AIRE</span></div>
+        <div class="header-subtitle">⚽ Panel de Producción Deportiva</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('partido', this)">
+        <span class="tab-icon">⚽</span>
+        <span>Próximo Partido</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('stream', this)">
+        <span class="tab-icon">📡</span>
+        <span>Stream</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('perfil', this)">
+        <span class="tab-icon"></span>
+        <span>Mi Perfil</span>
+      </button>
+    </div>
+
+    <!-- PANEL: PRÓXIMO PARTIDO -->
+    <div class="panel active" id="panelPartido">
+      <div class="panel-title">Próximo Partido</div>
+
+      <div class="user-bar">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-details">
+            <div class="user-name" id="userName">admin</div>
+            <div class="user-role" id="userRole">Administrador</div>
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="btn-user admin-only" onclick="openManageUsers()">👥 Usuarios</button>
+          <button class="btn-user admin-only" onclick="openManageStadiums()">🏟️ Estadios</button>
+          <button class="btn-user logout" onclick="doLogout()">🚪 Salir</button>
+        </div>
+      </div>
+
+      <div class="canvas-section">
+        <div class="canvas-section-header">
+          <div class="canvas-section-title">🎨 Seleccionar Lienzo Base</div>
+          <button class="btn-canvas-config admin-only" onclick="openManageCanvases()">⚙️ Configurar Lienzos</button>
+        </div>
+        <div class="canvas-list" id="canvasList"></div>
+      </div>
+
+      <div class="dynamic-section" id="sectionTeams">
+        <div class="teams-row">
+          <div class="team-selector">
+            <label>Equipo Local</label>
+            <div class="team-button" id="localButton" onclick="openTeamModal('local')">
+              <div class="team-info">
+                <div class="team-name" id="localTeamName">Seleccionar equipo</div>
+                <div class="team-hint">Haz clic para elegir</div>
+              </div>
+            </div>
+          </div>
+          <div class="team-selector">
+            <label>Equipo Visitante</label>
+            <div class="team-button" id="visitButton" onclick="openTeamModal('visit')">
+              <div class="team-info">
+                <div class="team-name" id="visitTeamName">Seleccionar equipo</div>
+                <div class="team-hint">Haz clic para elegir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dynamic-section" id="sectionControls">
+        <div class="controls-grid">
+          <div class="control-field" id="fieldDate">
+            <label> Fecha</label>
+            <input type="date" id="matchDate" />
+          </div>
+          <div class="control-field" id="fieldTime">
+            <label> Hora</label>
+            <input type="time" id="matchTime" value="20:00" />
+          </div>
+          <div class="control-field full" id="fieldStadium">
+            <label>️ Estadio</label>
+            <input type="text" id="stadiumName" value="NOMBRE DEL ESTADIO" />
+          </div>
+          <div class="control-field" id="fieldCompetition">
+            <label> Competición</label>
+            <input type="text" id="competitionName" value="Liga BetPlay Dimayor" />
+          </div>
+          <div class="control-field" id="fieldRound">
+            <label> Jornada</label>
+            <input type="text" id="roundName" value="FECHA 12" />
+          </div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn" onclick="exportMatch()">📸 Generar Imagen</button>
+        <button class="btn manage admin-only" onclick="openManageTeams()">️ Configurar Equipos</button>
+      </div>
+    </div>
+
+    <!-- PANEL: STREAM -->
+    <div class="panel" id="panelStream">
+      <div class="panel-title">📡 Stream - Marcador Animado</div>
+      
+      <div class="public-link-section">
+        <div class="public-link-title">🔗 Link Público (Sin Login)</div>
+        <div class="public-link-url" id="publicLinkUrl">Cargando...</div>
+        <div class="public-link-actions">
+          <button class="btn copy-link" onclick="copyPublicLink()"> Copiar Link</button>
+          <button class="btn secondary" onclick="openPublicLink()">️ Abrir en Nueva Pestaña</button>
+          <button class="btn manage" onclick="testPublicLink()">🧪 Probar</button>
+        </div>
+      </div>
+
+      <!-- Selector de Estadio -->
+      <div class="stadium-selector-section">
+        <div class="stadium-selector-title">🏟️ Seleccionar Estadio (Fondo 16:9)</div>
+        <select class="stadium-select" id="stadiumSelect" onchange="changeStadium()">
+          <option value="">-- Sin fondo (color por defecto) --</option>
+        </select>
+      </div>
+
+      <div class="stream-container">
+        <div class="scoreboard">
+          <div class="scoreboard-header">
+            <div class="scoreboard-title">⚽ Marcador en Vivo</div>
+          </div>
+          
+          <div class="teams-display">
+            <div class="team-display">
+              <button class="team-select-btn" onclick="openStreamTeamModal(1)" id="streamTeamBtn1">
+                <img id="streamTeamCrest1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23d4af37'/%3E%3Ctext x='50' y='55' font-size='40' fill='%23000' text-anchor='middle' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" alt="Equipo 1" />
+                <div class="team-label" id="streamTeamName1">Equipo Local</div>
+                <div class="team-hint">Toca para cambiar</div>
+              </button>
+              <div class="score-control">
+                <button class="score-btn minus" onclick="updateScore(1, -1)">−</button>
+                <div class="score-display" id="score1">0</div>
+                <button class="score-btn" onclick="updateScore(1, 1)">+</button>
+              </div>
+            </div>
+            
+            <div class="vs-divider">VS</div>
+            
+            <div class="team-display">
+              <button class="team-select-btn" onclick="openStreamTeamModal(2)" id="streamTeamBtn2">
+                <img id="streamTeamCrest2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23d4af37'/%3E%3Ctext x='50' y='55' font-size='40' fill='%23000' text-anchor='middle' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" alt="Equipo 2" />
+                <div class="team-label" id="streamTeamName2">Equipo Visitante</div>
+                <div class="team-hint">Toca para cambiar</div>
+              </button>
+              <div class="score-control">
+                <button class="score-btn minus" onclick="updateScore(2, -1)">−</button>
+                <div class="score-display" id="score2">0</div>
+                <button class="score-btn" onclick="updateScore(2, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="timer-section">
+            <div class="timer-header">
+              <div class="timer-title">️ Tiempo del Partido</div>
+              <div class="half-selector">
+                <button class="half-btn active" id="halfBtn1" onclick="setHalf(1)">1er Tiempo</button>
+                <button class="half-btn" id="halfBtn2" onclick="setHalf(2)">2do Tiempo</button>
+              </div>
+            </div>
+            
+            <div class="timer-display">
+              <div class="timer-time" id="timerDisplay">00:00</div>
+            </div>
+            
+            <div class="timer-controls">
+              <button class="btn success" id="timerStartBtn" onclick="toggleTimer()">▶️ Iniciar</button>
+              <button class="btn secondary" onclick="resetTimer()">🔄 Reiniciar</button>
+            </div>
+            
+            <div class="extra-time-section">
+              <div class="extra-time-title">➕ Agregar Tiempo Extra</div>
+              <div class="extra-time-input-row">
+                <input type="number" class="extra-time-input" id="extraTimeInput" placeholder="Minutos" min="1" max="30" value="1" />
+                <button class="btn" onclick="addExtraTime()">Agregar</button>
+              </div>
+              <div class="extra-time-display" id="extraTimeDisplay" style="display: none;">
+                Tiempo extra agregado: <span id="extraTimeValue">0</span> min
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL: MI PERFIL -->
+    <div class="panel" id="panelPerfil">
+      <div class="panel-title">Mi Perfil</div>
+
+      <div class="user-bar">
+        <div class="user-info">
+          <div class="user-avatar" id="profileAvatar2">A</div>
+          <div class="user-details">
+            <div class="user-name" id="profileName2">admin</div>
+            <div class="user-role" id="profileRole2">Administrador</div>
+          </div>
+        </div>
+        <div class="user-actions">
+          <button class="btn-user logout" onclick="doLogout()">🚪 Salir</button>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-header">
+          <div class="profile-avatar" id="profileAvatar">A</div>
+          <div class="profile-info">
+            <h3 id="profileName">admin</h3>
+            <span class="profile-role-badge" id="profileRoleBadge">Administrador</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="manage-form">
+        <div class="manage-form-title">🔑 Cambiar Contraseña</div>
+        <div class="form-group">
+          <label>Contraseña Actual</label>
+          <input type="password" id="currentPass" placeholder="Ingresa tu contraseña actual" />
+        </div>
+        <div class="form-group">
+          <label>Nueva Contraseña</label>
+          <input type="password" id="newPass" placeholder="Ingresa la nueva contraseña" />
+        </div>
+        <div class="form-group">
+          <label>Confirmar Nueva Contraseña</label>
+          <input type="password" id="confirmPass" placeholder="Repite la nueva contraseña" />
+        </div>
+        <div class="form-actions">
+          <button class="btn" onclick="changePassword()">💾 Actualizar Contraseña</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELECCIÓN EQUIPOS STREAM -->
+<div class="modal-overlay" id="streamTeamModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeStreamTeamModal()">×</button>
+    <div class="modal-title" id="streamTeamModalTitle">Seleccionar Equipo</div>
+    <div class="team-list" id="streamTeamList"></div>
+  </div>
+</div>
+
+<!-- MODAL GESTIÓN ESTADIOS -->
+<div class="modal-overlay" id="stadiumModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeManageStadiums()">×</button>
+    <div class="modal-title">🏟️ Gestionar Estadios (Fondos 16:9)</div>
+    
+    <div class="manage-form">
+      <div class="manage-form-title"> Agregar Nuevo Estadio</div>
+      <div class="form-group">
+        <label>Nombre del Estadio</label>
+        <input type="text" id="stadiumNameInput" placeholder="Ej: Estadio El Campín" maxlength="50" />
+      </div>
+      <div class="form-group">
+        <label>Link de la Foto (URL - formato 16:9)</label>
+        <input type="url" id="stadiumPhotoInput" placeholder="https://ejemplo.com/foto.jpg" />
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="saveStadium()">💾 Guardar</button>
+        <button class="btn secondary" onclick="cancelStadiumForm()">❌ Cancelar</button>
+      </div>
+    </div>
+    
+    <div class="all-items-section">
+      <div class="all-items-title">
+        <span>📋 Todos los Estadios</span>
+        <span class="all-items-count" id="allStadiumsCount">0</span>
+      </div>
+      <div id="allStadiumsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="goal-overlay" id="goalOverlay">
+  <div class="goal-text" id="goalText">¡GOOOL!</div>
+</div>
+
+<div class="modal-overlay" id="usersModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeManageUsers()">×</button>
+    <div class="modal-title"> Gestionar Usuarios</div>
+    <div class="manage-header">
+      <button class="btn" onclick="showAddUserForm()">➕ Registrar Usuario</button>
+    </div>
+    <div class="manage-form" id="userForm" style="display: none;">
+      <div class="manage-form-title" id="userFormTitle">➕ Registrar Nuevo Usuario</div>
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" id="userFullName" placeholder="Ej: Juan Pérez" maxlength="50" />
+      </div>
+      <div class="form-group">
+        <label>Usuario (login)</label>
+        <input type="text" id="userUsername" placeholder="Ej: juanperez" maxlength="30" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="userPassword" placeholder="Mínimo 4 caracteres" />
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="userRoleSelect">
+            <option value="user">Usuario</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="saveUser()">💾 Guardar</button>
+        <button class="btn secondary" onclick="cancelUserForm()">❌ Cancelar</button>
+      </div>
+    </div>
+    <div class="all-items-section">
+      <div class="all-items-title">
+        <span>📋 Todos los Usuarios</span>
+        <span class="all-items-count" id="allUsersCount">0</span>
+      </div>
+      <div id="allUsersList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="teamModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeTeamModal()">×</button>
+    <div class="modal-title" id="modalTitle">Seleccionar Equipo</div>
+    <div class="team-list" id="teamList"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manageModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeManageTeams()">×</button>
+    <div class="modal-title">⚙️ Configurar Equipos</div>
+    <div class="manage-header">
+      <button class="btn" onclick="showAddForm()">➕ Agregar Equipo</button>
+      <button class="btn secondary" onclick="restoreOriginalTeams()">🔄 Restaurar Originales</button>
+    </div>
+    <div class="manage-form" id="manageForm" style="display: none;">
+      <div class="manage-form-title" id="formTitle">➕ Agregar Nuevo Equipo</div>
+      <div class="form-group">
+        <label>Nombre del Equipo</label>
+        <input type="text" id="newTeamName" placeholder="Ej: Real Madrid" maxlength="50" />
+      </div>
+      <div class="form-group">
+        <label>Link del Logo (URL)</label>
+        <input type="url" id="newTeamLogo" placeholder="https://ejemplo.com/logo.svg" />
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="saveTeam()">💾 Guardar</button>
+        <button class="btn secondary" onclick="cancelForm()">❌ Cancelar</button>
+      </div>
+    </div>
+    <div class="all-items-section">
+      <div class="all-items-title">
+        <span> Todos los Equipos</span>
+        <span class="all-items-count" id="allTeamsCount">0</span>
+      </div>
+      <div id="allTeamsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="canvasModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeManageCanvases()">×</button>
+    <div class="modal-title">🎨 Configurar Lienzos</div>
+    <div class="manage-header">
+      <button class="btn" onclick="showAddCanvasForm()">➕ Agregar Lienzo</button>
+      <button class="btn secondary" onclick="restoreOriginalCanvases()">🔄 Restaurar Originales</button>
+    </div>
+    <div class="manage-form" id="canvasForm" style="display: none;">
+      <div class="manage-form-title" id="canvasFormTitle">➕ Agregar Nuevo Lienzo</div>
+      <div class="form-group">
+        <label>Nombre del Lienzo</label>
+        <input type="text" id="canvasName" placeholder="Ej: Visitante" maxlength="50" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ancho (px)</label>
+          <input type="number" id="canvasWidth" placeholder="1080" min="100" max="5000" />
+        </div>
+        <div class="form-group">
+          <label>Alto (px)</label>
+          <input type="number" id="canvasHeight" placeholder="1350" min="100" max="5000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Link de la Plantilla (URL)</label>
+        <input type="url" id="canvasUrl" placeholder="https://ejemplo.com/plantilla.jpg" />
+      </div>
+      <div class="fields-config">
+        <div class="fields-config-title">👁️ Campos visibles al seleccionar este lienzo</div>
+        <div class="fields-grid">
+          <label class="field-checkbox"><input type="checkbox" id="cfgTeams" checked /><span>⚽ Equipos</span></label>
+          <label class="field-checkbox"><input type="checkbox" id="cfgDate" checked /><span>📅 Fecha</span></label>
+          <label class="field-checkbox"><input type="checkbox" id="cfgTime" checked /><span>⏰ Hora</span></label>
+          <label class="field-checkbox"><input type="checkbox" id="cfgStadium" checked /><span>🏟️ Estadio</span></label>
+          <label class="field-checkbox"><input type="checkbox" id="cfgCompetition" checked /><span>🏆 Competición</span></label>
+          <label class="field-checkbox"><input type="checkbox" id="cfgRound" checked /><span>📋 Jornada</span></label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="saveCanvas()"> Guardar</button>
+        <button class="btn secondary" onclick="cancelCanvasForm()">❌ Cancelar</button>
+      </div>
+    </div>
+    <div class="all-items-section">
+      <div class="all-items-title">
+        <span>🖼️ Todos los Lienzos</span>
+        <span class="all-items-count" id="allCanvasesCount">0</span>
+      </div>
+      <div id="allCanvasesList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="preview-modal" id="previewModal">
+  <div class="preview-content">
+    <div class="preview-title">✅ Imagen Generada</div>
+    <div class="preview-hint"> Haz clic derecho sobre la imagen y selecciona "Guardar imagen como..."</div>
+    <img id="previewImage" src="" alt="Vista previa" />
+    <div class="preview-actions">
+      <button class="btn" onclick="downloadPreview()">💾 Descargar</button>
+      <button class="btn secondary" onclick="openInNewTab()">👁️ Abrir en Pestaña</button>
+      <button class="btn secondary" onclick="closePreview()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// DETECCIÓN DE MODO PÚBLICO
+// ============================================
+const PUBLIC_HASH = '#public';
+
+function isPublicMode() {
+  const hash = window.location.hash;
+  const params = new URLSearchParams(window.location.search);
+  return hash === PUBLIC_HASH || params.get('public') === '1';
+}
+
+// ============================================
+// LISTA DE EQUIPOS
+// ============================================
+const teamsList = [
+  { name: "Atlético Bucaramanga", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/1.svg" },
+  { name: "Alianza FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/2.svg" },
+  { name: "Deportivo Pasto", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/3.svg" },
+  { name: "Junior de Barranquilla", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/4.svg" },
+  { name: "Boyacá Chicó", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/5.svg" },
+  { name: "Jaguares FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/6.svg" },
+  { name: "Deportivo Pereira", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/7.svg" },
+  { name: "Fortaleza", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/8.svg" },
+  { name: "Internacional de Bogotá", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/9.svg" },
+  { name: "Deportivo Cali", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/10.svg" },
+  { name: "Cúcuta Deportivo", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/11.svg" },
+  { name: "Once Caldas", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/12.svg" },
+  { name: "América de Cali", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/13.svg" },
+  { name: "Deportes Tolima", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/14.svg" },
+  { name: "Atlético Nacional", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/15.svg" },
+  { name: "Millonarios", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/16.svg" },
+  { name: "Llaneros FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/17.svg" },
+  { name: "Independiente Santa Fe", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/18.svg" },
+  { name: "Águilas Doradas", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/19.svg" },
+  { name: "Independiente Medellín", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/20.svg" }
+];
+
+// ============================================
+// LISTA DE ESTADIOS (con Estadio Deportivo Cali por defecto)
+// ============================================
+let stadiumsList = [
+  {
+    id: 'stadium_deportivo_cali',
+    name: 'Estadio Deportivo Cali',
+    photo: 'https://raw.githubusercontent.com/barona42614/GESTORCONTECV/f16ef35bb53d041bc032c318f6d8cacfbcb06ca9/estadio%20Deportivo%20cali.jpg'
+  }
+];
+
+function loadStadiums() {
+  try {
+    const stored = localStorage.getItem('cvStadiums');
+    if (stored) {
+      stadiumsList = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Error cargando estadios:', e);
+  }
+}
+
+function saveStadiums() {
+  try {
+    localStorage.setItem('cvStadiums', JSON.stringify(stadiumsList));
+  } catch (e) {
+    console.error('Error guardando estadios:', e);
+  }
+}
+
+const defaultPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23d4af37'/%3E%3Ctext x='50' y='55' font-size='40' fill='%23000' text-anchor='middle' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E";
+
+// ============================================
+// ESTADO GLOBAL DEL STREAM
+// ============================================
+let streamState = {
+  team1: 'Equipo Local',
+  team2: 'Equipo Visitante',
+  crest1: defaultPlaceholder,
+  crest2: defaultPlaceholder,
+  score1: 0,
+  score2: 0,
+  timerSeconds: 0,
+  extraTime: 0,
+  isRunning: false,
+  currentHalf: 1,
+  stadiumId: '',
+  stadiumPhoto: '',
+  lastUpdate: 0
+};
+
+// ============================================
+// FUNCIONES DE SINCRONIZACIÓN
+// ============================================
+function saveStreamState() {
+  streamState.lastUpdate = Date.now();
+  try {
+    localStorage.setItem('cvStreamData', JSON.stringify(streamState));
+  } catch (e) {
+    console.error('Error guardando stream:', e);
+  }
+}
+
+function loadStreamState() {
+  try {
+    const data = localStorage.getItem('cvStreamData');
+    if (data) {
+      const parsed = JSON.parse(data);
+      streamState = { ...streamState, ...parsed };
+    }
+  } catch (e) {
+    console.error('Error cargando stream:', e);
+  }
+  return streamState;
+}
+
+// ============================================
+// MODO PÚBLICO
+// ============================================
+let publicPollInterval = null;
+
+function initPublicMode() {
+  console.log('🌐 Modo público activado');
+  loadStadiums();
+  loadStreamState();
+  renderPublicView();
+  
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cvStreamData') {
+      console.log('📡 Cambio detectado en localStorage');
+      loadStreamState();
+      renderPublicView();
+    }
+  });
+  
+  publicPollInterval = setInterval(() => {
+    loadStreamState();
+    renderPublicView();
+  }, 500);
+  
+  updateDebugInfo();
+}
+
+function renderPublicView() {
+  const state = streamState;
+  
+  // Aplicar fondo del estadio (formato 16:9)
+  const stadiumBg = document.getElementById('publicStadiumBg');
+  if (stadiumBg && state.stadiumPhoto) {
+    stadiumBg.style.backgroundImage = `url('${state.stadiumPhoto}')`;
+  } else if (stadiumBg) {
+    stadiumBg.style.backgroundImage = 'none';
+  }
+  
+  const team1El = document.getElementById('publicTeam1Name');
+  const team2El = document.getElementById('publicTeam2Name');
+  const crest1El = document.getElementById('publicCrest1');
+  const crest2El = document.getElementById('publicCrest2');
+  
+  if (team1El) team1El.textContent = state.team1 || 'Equipo Local';
+  if (team2El) team2El.textContent = state.team2 || 'Equipo Visitante';
+  if (crest1El) crest1El.src = state.crest1 || defaultPlaceholder;
+  if (crest2El) crest2El.src = state.crest2 || defaultPlaceholder;
+  
+  const score1El = document.getElementById('publicScore1');
+  const score2El = document.getElementById('publicScore2');
+  
+  if (score1El) {
+    const oldVal = parseInt(score1El.textContent) || 0;
+    const newVal = state.score1 || 0;
+    if (newVal !== oldVal) {
+      score1El.textContent = newVal;
+      if (newVal > oldVal) {
+        score1El.classList.remove('goal-scored');
+        void score1El.offsetWidth;
+        score1El.classList.add('goal-scored');
+        setTimeout(() => score1El.classList.remove('goal-scored'), 800);
+      }
+    }
+  }
+  
+  if (score2El) {
+    const oldVal = parseInt(score2El.textContent) || 0;
+    const newVal = state.score2 || 0;
+    if (newVal !== oldVal) {
+      score2El.textContent = newVal;
+      if (newVal > oldVal) {
+        score2El.classList.remove('goal-scored');
+        void score2El.offsetWidth;
+        score2El.classList.add('goal-scored');
+        setTimeout(() => score2El.classList.remove('goal-scored'), 800);
+      }
+    }
+  }
+  
+  const halfLabelEl = document.getElementById('publicHalfLabel');
+  if (halfLabelEl) {
+    halfLabelEl.textContent = (state.currentHalf === 2) ? '2DO TIEMPO' : '1ER TIEMPO';
+  }
+  
+  const timerEl = document.getElementById('publicTimer');
+  if (timerEl) {
+    const totalSeconds = state.timerSeconds || 0;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    timerEl.textContent = display;
+    
+    if (state.isRunning) {
+      timerEl.classList.add('running');
+    } else {
+      timerEl.classList.remove('running');
+    }
+  }
+  
+  updateDebugInfo();
+}
+
+function updateDebugInfo() {
+  const debugEl = document.getElementById('debugLastSync');
+  if (debugEl && streamState.lastUpdate) {
+    const date = new Date(streamState.lastUpdate);
+    debugEl.textContent = date.toLocaleTimeString();
+  }
+}
+
+function forcePublicRefresh() {
+  loadStreamState();
+  renderPublicView();
+  console.log('🔄 Refresh forzado. Estado:', streamState);
+}
+
+function simulateGoal() {
+  streamState.score1 = (streamState.score1 || 0) + 1;
+  saveStreamState();
+  renderPublicView();
+  console.log('⚽ Gol simulado. Score1:', streamState.score1);
+}
+
+// ============================================
+// MODO APP (CON LOGIN)
+// ============================================
+const defaultUsers = [
+  { id: 1, usuario: "admin", password: "root123", rol: "admin", nombre: "Administrador" },
+  { id: 2, usuario: "gallego", password: "gallego123", rol: "user", nombre: "Gallego" }
+];
+
+let allUsers = [];
+let currentUser = null;
+let editingUserIndex = null;
+
+function loadUsers() {
+  try {
+    const stored = localStorage.getItem('cvUsers');
+    if (stored) { allUsers = JSON.parse(stored); }
+    else { allUsers = JSON.parse(JSON.stringify(defaultUsers)); saveUsers(); }
+  } catch (e) { allUsers = JSON.parse(JSON.stringify(defaultUsers)); saveUsers(); }
+}
+function saveUsers() { try { localStorage.setItem('cvUsers', JSON.stringify(allUsers)); } catch (e) {} }
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errorEl = document.getElementById('loginError');
+  if (!user || !pass) { errorEl.textContent = '⚠️ Completa todos los campos'; errorEl.classList.add('show'); return; }
+  const found = allUsers.find(u => u.usuario.toLowerCase() === user.toLowerCase() && u.password === pass);
+  if (!found) { errorEl.textContent = '❌ Usuario o contraseña incorrectos'; errorEl.classList.add('show'); document.getElementById('loginPass').value = ''; return; }
+  currentUser = found;
+  localStorage.setItem('cvCurrentUser', JSON.stringify(currentUser));
+  errorEl.classList.remove('show');
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display = 'block';
+  updateUIForUser();
+  initStreamControls();
+  showToast(`✅ Bienvenido, ${found.nombre}`);
+}
+
+function doLogout() {
+  if (confirm('¿Seguro que quieres cerrar sesión?')) {
+    currentUser = null;
+    localStorage.removeItem('cvCurrentUser');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').classList.remove('show');
+    showToast('👋 Sesión cerrada');
+  }
+}
+
+function updateUIForUser() {
+  if (!currentUser) return;
+  const initial = currentUser.nombre.charAt(0).toUpperCase();
+  
+  document.getElementById('userAvatar').textContent = initial;
+  document.getElementById('userName').textContent = currentUser.nombre;
+  const roleEl = document.getElementById('userRole');
+  if (currentUser.rol === 'admin') { roleEl.textContent = 'Administrador'; roleEl.className = 'user-role admin'; }
+  else { roleEl.textContent = 'Usuario'; roleEl.className = 'user-role user'; }
+  
+  document.getElementById('profileAvatar').textContent = initial;
+  document.getElementById('profileAvatar2').textContent = initial;
+  document.getElementById('profileName').textContent = currentUser.nombre;
+  document.getElementById('profileName2').textContent = currentUser.nombre;
+  const profileBadge = document.getElementById('profileRoleBadge');
+  const profileRole2 = document.getElementById('profileRole2');
+  if (currentUser.rol === 'admin') { 
+    profileBadge.textContent = 'Administrador'; 
+    profileBadge.className = 'profile-role-badge';
+    profileRole2.textContent = 'Administrador';
+    profileRole2.className = 'user-role admin';
+  } else { 
+    profileBadge.textContent = 'Usuario'; 
+    profileBadge.className = 'profile-role-badge user';
+    profileRole2.textContent = 'Usuario';
+    profileRole2.className = 'user-role user';
+  }
+  
+  document.querySelectorAll('.admin-only').forEach(btn => { btn.style.display = currentUser.rol === 'admin' ? 'inline-block' : 'none'; });
+}
+
+function checkSession() {
+  try {
+    const stored = localStorage.getItem('cvCurrentUser');
+    if (stored) {
+      currentUser = JSON.parse(stored);
+      const exists = allUsers.find(u => u.id === currentUser.id);
+      if (exists) {
+        currentUser = exists;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').style.display = 'block';
+        updateUIForUser();
+        initStreamControls();
+        return;
+      }
+    }
+  } catch (e) {}
+}
+
+function switchTab(tabName, btn) {
+  document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+  document.getElementById('panel' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+}
+
+document.getElementById('loginPass').addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+function changePassword() {
+  const currentPass = document.getElementById('currentPass').value;
+  const newPass = document.getElementById('newPass').value;
+  const confirmPass = document.getElementById('confirmPass').value;
+  if (!currentPass) { showToast('⚠️ Ingresa tu contraseña actual'); return; }
+  if (currentPass !== currentUser.password) { showToast(' La contraseña actual es incorrecta'); return; }
+  if (!newPass) { showToast('⚠️ Ingresa la nueva contraseña'); return; }
+  if (newPass.length < 4) { showToast('⚠️ La contraseña debe tener al menos 4 caracteres'); return; }
+  if (newPass !== confirmPass) { showToast('❌ Las contraseñas nuevas no coinciden'); return; }
+  if (newPass === currentPass) { showToast('⚠️ La nueva contraseña es igual a la actual'); return; }
+  const userInDb = allUsers.find(u => u.id === currentUser.id);
+  if (userInDb) {
+    userInDb.password = newPass;
+    currentUser.password = newPass;
+    saveUsers();
+    localStorage.setItem('cvCurrentUser', JSON.stringify(currentUser));
+    document.getElementById('currentPass').value = '';
+    document.getElementById('newPass').value = '';
+    document.getElementById('confirmPass').value = '';
+    showToast('✅ Contraseña actualizada correctamente');
+  }
+}
+
+function openManageUsers() {
+  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
+  document.getElementById('usersModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderAllUsersList();
+  cancelUserForm();
+}
+function closeManageUsers() { document.getElementById('usersModal').classList.remove('show'); document.body.style.overflow = ''; }
+
+function showAddUserForm() {
+  editingUserIndex = null;
+  document.getElementById('userFormTitle').textContent = '➕ Registrar Nuevo Usuario';
+  document.getElementById('userFullName').value = '';
+  document.getElementById('userUsername').value = '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userRoleSelect').value = 'user';
+  document.getElementById('userForm').style.display = 'block';
+  document.getElementById('userFullName').focus();
+}
+function showEditUserForm(index) {
+  editingUserIndex = index;
+  const user = allUsers[index];
+  document.getElementById('userFormTitle').textContent = '✏️ Editar Usuario';
+  document.getElementById('userFullName').value = user.nombre;
+  document.getElementById('userUsername').value = user.usuario;
+  document.getElementById('userPassword').value = user.password;
+  document.getElementById('userRoleSelect').value = user.rol;
+  document.getElementById('userForm').style.display = 'block';
+  document.getElementById('userForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function cancelUserForm() {
+  editingUserIndex = null;
+  document.getElementById('userForm').style.display = 'none';
+  document.getElementById('userFullName').value = '';
+  document.getElementById('userUsername').value = '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userRoleSelect').value = 'user';
+}
+function saveUser() {
+  const nombre = document.getElementById('userFullName').value.trim();
+  const usuario = document.getElementById('userUsername').value.trim().toLowerCase();
+  const password = document.getElementById('userPassword').value;
+  const rol = document.getElementById('userRoleSelect').value;
+  if (!nombre || nombre.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
+  if (!usuario || usuario.length < 3) { showToast('⚠️ Usuario mínimo 3 caracteres'); return; }
+  if (!/^[a-z0-9_]+$/.test(usuario)) { showToast('⚠️ Usuario solo puede tener letras, números y guión bajo'); return; }
+  if (!password || password.length < 4) { showToast('⚠️ Contraseña mínimo 4 caracteres'); return; }
+  const exists = allUsers.some((u, idx) => u.usuario.toLowerCase() === usuario && idx !== editingUserIndex);
+  if (exists) { showToast('⚠️ Ya existe un usuario con ese nombre'); return; }
+  if (editingUserIndex !== null) {
+    const oldUser = allUsers[editingUserIndex];
+    if (oldUser.id === currentUser.id) {
+      currentUser.nombre = nombre; currentUser.usuario = usuario; currentUser.password = password; currentUser.rol = rol;
+      localStorage.setItem('cvCurrentUser', JSON.stringify(currentUser));
+      updateUIForUser();
+    }
+    allUsers[editingUserIndex] = { id: oldUser.id, nombre, usuario, password, rol };
+    showToast('✅ Usuario actualizado correctamente');
+  } else {
+    const newId = allUsers.length > 0 ? Math.max(...allUsers.map(u => u.id)) + 1 : 1;
+    allUsers.push({ id: newId, nombre, usuario, password, rol });
+    showToast('✅ Usuario registrado correctamente');
+  }
+  saveUsers(); cancelUserForm(); renderAllUsersList();
+}
+function deleteUser(index) {
+  const user = allUsers[index];
+  if (user.rol === 'admin') {
+    const adminCount = allUsers.filter(u => u.rol === 'admin').length;
+    if (adminCount <= 1) { showToast('⚠️ No se puede eliminar el último administrador'); return; }
+  }
+  if (user.id === currentUser.id) { showToast('️ No puedes eliminar tu propio usuario'); return; }
+  if (confirm(`¿Eliminar al usuario "${user.nombre}"?`)) {
+    allUsers.splice(index, 1); saveUsers(); renderAllUsersList();
+    showToast('🗑️ Usuario eliminado');
+  }
+}
+function renderAllUsersList() {
+  const listContainer = document.getElementById('allUsersList');
+  const countElement = document.getElementById('allUsersCount');
+  countElement.textContent = allUsers.length;
+  if (allUsers.length === 0) { listContainer.innerHTML = '<div class="empty-state">No hay usuarios</div>'; return; }
+  listContainer.innerHTML = allUsers.map((user, index) => {
+    const initial = user.nombre.charAt(0).toUpperCase();
+    const isCurrentUser = user.id === currentUser?.id;
+    const rolLabel = user.rol === 'admin' ? 'Admin' : 'Usuario';
+    const rolClass = user.rol === 'admin' ? 'admin' : 'user';
+    return `
+      <div class="user-card">
+        <div class="user-card-avatar">${initial}</div>
+        <div class="user-card-info">
+          <div class="user-card-name">${user.nombre} ${isCurrentUser ? '<span style="color:#d4af37;font-size:0.7rem;">(Tú)</span>' : ''}</div>
+          <div class="user-card-details"><span> ${user.usuario}</span><span class="role-tag ${rolClass}">${rolLabel}</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon btn-edit" onclick="showEditUserForm(${index})" title="Editar">✏️</button>
+          <button class="btn-icon btn-delete" onclick="deleteUser(${index})" title="Eliminar" ${isCurrentUser ? 'style="opacity:0.4;pointer-events:none;"' : ''}>🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// GESTIÓN DE ESTADIOS
+// ============================================
+let editingStadiumIndex = null;
+
+function openManageStadiums() {
+  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
+  document.getElementById('stadiumModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderAllStadiumsList();
+  cancelStadiumForm();
+}
+
+function closeManageStadiums() {
+  document.getElementById('stadiumModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function saveStadium() {
+  const name = document.getElementById('stadiumNameInput').value.trim();
+  const photo = document.getElementById('stadiumPhotoInput').value.trim();
+  
+  if (!name || name.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
+  if (!photo) { showToast('⚠️ Ingresa el link de la foto'); return; }
+  try { new URL(photo); } catch (e) { showToast('⚠️ Link no válido'); return; }
+  
+  const exists = stadiumsList.some((s, idx) => s.name.toLowerCase() === name.toLowerCase() && idx !== editingStadiumIndex);
+  if (exists) { showToast('⚠️ Ya existe un estadio con ese nombre'); return; }
+  
+  if (editingStadiumIndex !== null) {
+    stadiumsList[editingStadiumIndex] = { id: stadiumsList[editingStadiumIndex].id, name, photo };
+    showToast('✅ Estadio actualizado');
+  } else {
+    const newId = 'stadium_' + Date.now();
+    stadiumsList.push({ id: newId, name, photo });
+    showToast('✅ Estadio agregado');
+  }
+  
+  saveStadiums();
+  cancelStadiumForm();
+  renderAllStadiumsList();
+  updateStadiumSelect();
+}
+
+function cancelStadiumForm() {
+  editingStadiumIndex = null;
+  document.getElementById('stadiumNameInput').value = '';
+  document.getElementById('stadiumPhotoInput').value = '';
+}
+
+function editStadium(index) {
+  editingStadiumIndex = index;
+  const stadium = stadiumsList[index];
+  document.getElementById('stadiumNameInput').value = stadium.name;
+  document.getElementById('stadiumPhotoInput').value = stadium.photo;
+}
+
+function deleteStadium(index) {
+  const stadium = stadiumsList[index];
+  if (confirm(`¿Eliminar "${stadium.name}"?`)) {
+    stadiumsList.splice(index, 1);
+    saveStadiums();
+    renderAllStadiumsList();
+    updateStadiumSelect();
+    showToast('🗑️ Estadio eliminado');
+  }
+}
+
+function renderAllStadiumsList() {
+  const listContainer = document.getElementById('allStadiumsList');
+  const countElement = document.getElementById('allStadiumsCount');
+  countElement.textContent = stadiumsList.length;
+  
+  if (stadiumsList.length === 0) {
+    listContainer.innerHTML = '<div class="empty-state">No hay estadios. Agrega el primero arriba.</div>';
+    return;
+  }
+  
+  listContainer.innerHTML = stadiumsList.map((stadium, index) => `
+    <div class="item-card">
+      <div class="item-preview" style="width: 80px; height: 60px;">
+        <img src="${stadium.photo}" alt="${stadium.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2212%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E?%3C/text%3E%3C/svg%3E'" />
+      </div>
+      <div class="item-info">
+        <div class="item-name">${stadium.name}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-icon btn-edit" onclick="editStadium(${index})" title="Editar">️</button>
+        <button class="btn-icon btn-delete" onclick="deleteStadium(${index})" title="Eliminar">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateStadiumSelect() {
+  const select = document.getElementById('stadiumSelect');
+  const currentValue = select.value;
+  
+  select.innerHTML = '<option value="">-- Sin fondo (color por defecto) --</option>';
+  
+  stadiumsList.forEach(stadium => {
+    const option = document.createElement('option');
+    option.value = stadium.id;
+    option.textContent = stadium.name;
+    select.appendChild(option);
+  });
+  
+  select.value = currentValue;
+}
+
+function changeStadium() {
+  const select = document.getElementById('stadiumSelect');
+  const stadiumId = select.value;
+  
+  if (stadiumId) {
+    const stadium = stadiumsList.find(s => s.id === stadiumId);
+    if (stadium) {
+      streamState.stadiumId = stadium.id;
+      streamState.stadiumPhoto = stadium.photo;
+      saveStreamState();
+      showToast(`✅ Estadio "${stadium.name}" seleccionado como fondo`);
+    }
+  } else {
+    streamState.stadiumId = '';
+    streamState.stadiumPhoto = '';
+    saveStreamState();
+    showToast('🎨 Fondo removido');
+  }
+}
+
+const originalCanvases = [
+  { 
+    id: 'local', name: 'Local', width: 1080, height: 1350, 
+    url: 'https://raw.githubusercontent.com/barona42614/GESTORCONTECV/928d5f5da0f71cbad5c67823d3b760051e9ab0ed/o%20(3).jpg',
+    fields: { teams: true, date: true, time: true, stadium: true, competition: true, round: true }
+  }
+];
+let allCanvases = [];
+let selectedCanvasId = 'local';
+let editingCanvasIndex = null;
+
+function loadCanvases() {
+  try {
+    const stored = localStorage.getItem('allCanvases');
+    if (stored) { allCanvases = JSON.parse(stored); }
+    else { allCanvases = JSON.parse(JSON.stringify(originalCanvases)); }
+    const selectedId = localStorage.getItem('selectedCanvasId');
+    if (selectedId && allCanvases.some(c => c.id === selectedId)) selectedCanvasId = selectedId;
+    else selectedCanvasId = allCanvases[0]?.id || 'local';
+  } catch (e) { allCanvases = JSON.parse(JSON.stringify(originalCanvases)); selectedCanvasId = 'local'; }
+}
+function saveCanvases() {
+  try { localStorage.setItem('allCanvases', JSON.stringify(allCanvases)); localStorage.setItem('selectedCanvasId', selectedCanvasId); } catch (e) {}
+}
+function restoreOriginalCanvases() {
+  if (confirm('¿Restaurar lienzos originales?')) {
+    allCanvases = JSON.parse(JSON.stringify(originalCanvases));
+    selectedCanvasId = allCanvases[0]?.id || 'local';
+    saveCanvases(); renderCanvasList(); renderAllCanvasesList(); applyCanvasFields();
+    showToast('✅ Lienzos restaurados');
+  }
+}
+function getSelectedCanvas() { return allCanvases.find(c => c.id === selectedCanvasId) || allCanvases[0]; }
+
+function applyCanvasFields() {
+  const canvas = getSelectedCanvas();
+  const fields = canvas.fields || { teams: true, date: true, time: true, stadium: true, competition: true, round: true };
+  const sectionTeams = document.getElementById('sectionTeams');
+  if (fields.teams) sectionTeams.classList.remove('hidden');
+  else sectionTeams.classList.add('hidden');
+  const sectionControls = document.getElementById('sectionControls');
+  const hasAnyControl = fields.date || fields.time || fields.stadium || fields.competition || fields.round;
+  if (hasAnyControl) sectionControls.classList.remove('hidden');
+  else sectionControls.classList.add('hidden');
+  document.getElementById('fieldDate').style.display = fields.date ? 'flex' : 'none';
+  document.getElementById('fieldTime').style.display = fields.time ? 'flex' : 'none';
+  document.getElementById('fieldStadium').style.display = fields.stadium ? 'flex' : 'none';
+  document.getElementById('fieldCompetition').style.display = fields.competition ? 'flex' : 'none';
+  document.getElementById('fieldRound').style.display = fields.round ? 'flex' : 'none';
+}
+
+function renderCanvasList() {
+  const canvasList = document.getElementById('canvasList');
+  if (allCanvases.length === 0) { canvasList.innerHTML = '<div class="empty-state">No hay lienzos</div>'; return; }
+  canvasList.innerHTML = allCanvases.map((canvas) => `
+    <div class="canvas-option ${selectedCanvasId === canvas.id ? 'selected' : ''}" onclick="selectCanvas('${canvas.id}')">
+      <div class="canvas-preview">
+        <img src="${canvas.url}" alt="${canvas.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 135%22%3E%3Crect width=%22100%22 height=%22135%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-size=%2212%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E${encodeURIComponent(canvas.name)}%3C/text%3E%3C/svg%3E'" />
+      </div>
+      <div class="canvas-name">${canvas.name}</div>
+    </div>
+  `).join('');
+}
+
+function selectCanvas(id) {
+  selectedCanvasId = id;
+  saveCanvases();
+  renderCanvasList();
+  applyCanvasFields();
+  const canvas = getSelectedCanvas();
+  showToast(`✅ Lienzo "${canvas.name}" seleccionado`);
+}
+
+function openManageCanvases() {
+  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
+  document.getElementById('canvasModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderAllCanvasesList();
+  cancelCanvasForm();
+}
+function closeManageCanvases() { document.getElementById('canvasModal').classList.remove('show'); document.body.style.overflow = ''; }
+
+function showAddCanvasForm() {
+  editingCanvasIndex = null;
+  document.getElementById('canvasFormTitle').textContent = '➕ Agregar Nuevo Lienzo';
+  document.getElementById('canvasName').value = '';
+  document.getElementById('canvasWidth').value = '';
+  document.getElementById('canvasHeight').value = '';
+  document.getElementById('canvasUrl').value = '';
+  document.getElementById('cfgTeams').checked = true;
+  document.getElementById('cfgDate').checked = true;
+  document.getElementById('cfgTime').checked = true;
+  document.getElementById('cfgStadium').checked = true;
+  document.getElementById('cfgCompetition').checked = true;
+  document.getElementById('cfgRound').checked = true;
+  document.getElementById('canvasForm').style.display = 'block';
+  document.getElementById('canvasName').focus();
+}
+function showEditCanvasForm(index) {
+  editingCanvasIndex = index;
+  const canvas = allCanvases[index];
+  document.getElementById('canvasFormTitle').textContent = '✏️ Editar Lienzo';
+  document.getElementById('canvasName').value = canvas.name;
+  document.getElementById('canvasWidth').value = canvas.width;
+  document.getElementById('canvasHeight').value = canvas.height;
+  document.getElementById('canvasUrl').value = canvas.url;
+  const fields = canvas.fields || { teams: true, date: true, time: true, stadium: true, competition: true, round: true };
+  document.getElementById('cfgTeams').checked = fields.teams !== false;
+  document.getElementById('cfgDate').checked = fields.date !== false;
+  document.getElementById('cfgTime').checked = fields.time !== false;
+  document.getElementById('cfgStadium').checked = fields.stadium !== false;
+  document.getElementById('cfgCompetition').checked = fields.competition !== false;
+  document.getElementById('cfgRound').checked = fields.round !== false;
+  document.getElementById('canvasForm').style.display = 'block';
+  document.getElementById('canvasForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function cancelCanvasForm() {
+  editingCanvasIndex = null;
+  document.getElementById('canvasForm').style.display = 'none';
+  document.getElementById('canvasName').value = '';
+  document.getElementById('canvasWidth').value = '';
+  document.getElementById('canvasHeight').value = '';
+  document.getElementById('canvasUrl').value = '';
+  document.getElementById('cfgTeams').checked = true;
+  document.getElementById('cfgDate').checked = true;
+  document.getElementById('cfgTime').checked = true;
+  document.getElementById('cfgStadium').checked = true;
+  document.getElementById('cfgCompetition').checked = true;
+  document.getElementById('cfgRound').checked = true;
+}
+function saveCanvas() {
+  const name = document.getElementById('canvasName').value.trim();
+  const width = parseInt(document.getElementById('canvasWidth').value);
+  const height = parseInt(document.getElementById('canvasHeight').value);
+  const url = document.getElementById('canvasUrl').value.trim();
+  const fields = {
+    teams: document.getElementById('cfgTeams').checked,
+    date: document.getElementById('cfgDate').checked,
+    time: document.getElementById('cfgTime').checked,
+    stadium: document.getElementById('cfgStadium').checked,
+    competition: document.getElementById('cfgCompetition').checked,
+    round: document.getElementById('cfgRound').checked
+  };
+  if (!name || name.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
+  if (!width || width < 100 || width > 5000) { showToast('⚠️ Ancho entre 100 y 5000 px'); return; }
+  if (!height || height < 100 || height > 5000) { showToast('⚠️ Alto entre 100 y 5000 px'); return; }
+  if (!url) { showToast('⚠️ Ingresa el link'); return; }
+  try { new URL(url); } catch (e) { showToast('⚠️ Link no válido'); return; }
+  const exists = allCanvases.some((c, idx) => c.name.toLowerCase() === name.toLowerCase() && idx !== editingCanvasIndex);
+  if (exists) { showToast('⚠️ Ya existe un lienzo con ese nombre'); return; }
+  if (editingCanvasIndex !== null) {
+    const oldId = allCanvases[editingCanvasIndex].id;
+    allCanvases[editingCanvasIndex] = { id: oldId, name, width, height, url, fields };
+    showToast('✅ Lienzo actualizado');
+  } else {
+    allCanvases.push({ id: 'canvas_' + Date.now(), name, width, height, url, fields });
+    showToast('✅ Lienzo agregado');
+  }
+  saveCanvases(); cancelCanvasForm(); renderAllCanvasesList(); renderCanvasList(); applyCanvasFields();
+}
+function deleteCanvas(index) {
+  if (allCanvases.length <= 1) { showToast('⚠️ Debe haber al menos un lienzo'); return; }
+  const canvas = allCanvases[index];
+  if (confirm(`¿Eliminar "${canvas.name}"?`)) {
+    allCanvases.splice(index, 1);
+    if (selectedCanvasId === canvas.id) selectedCanvasId = allCanvases[0].id;
+    saveCanvases(); renderAllCanvasesList(); renderCanvasList(); applyCanvasFields();
+    showToast('🗑️ Lienzo eliminado');
+  }
+}
+function renderAllCanvasesList() {
+  const listContainer = document.getElementById('allCanvasesList');
+  const countElement = document.getElementById('allCanvasesCount');
+  countElement.textContent = allCanvases.length;
+  if (allCanvases.length === 0) { listContainer.innerHTML = '<div class="empty-state">No hay lienzos</div>'; return; }
+  listContainer.innerHTML = allCanvases.map((canvas, index) => {
+    const fields = canvas.fields || { teams: true, date: true, time: true, stadium: true, competition: true, round: true };
+    const activeFields = Object.values(fields).filter(v => v).length;
+    const totalFields = Object.keys(fields).length;
+    return `
+      <div class="item-card">
+        <div class="item-preview">
+          <img src="${canvas.url}" alt="${canvas.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 135%22%3E%3Crect width=%22100%22 height=%22135%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-size=%2212%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E?%3C/text%3E%3C/svg%3E'" />
+        </div>
+        <div class="item-info">
+          <div class="item-name">${canvas.name}</div>
+          <div class="item-details">${canvas.width}×${canvas.height}px • ${activeFields}/${totalFields} campos</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon btn-edit" onclick="showEditCanvasForm(${index})" title="Editar">✏️</button>
+          <button class="btn-icon btn-delete" onclick="deleteCanvas(${index})" title="Eliminar">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+const originalTeams = [
+  { name: "Atlético Bucaramanga", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/1.svg" },
+  { name: "Alianza FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/2.svg" },
+  { name: "Deportivo Pasto", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/3.svg" },
+  { name: "Junior de Barranquilla", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/4.svg" },
+  { name: "Boyacá Chicó", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/5.svg" },
+  { name: "Jaguares FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/6.svg" },
+  { name: "Deportivo Pereira", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/7.svg" },
+  { name: "Fortaleza", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/8.svg" },
+  { name: "Internacional de Bogotá", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/9.svg" },
+  { name: "Deportivo Cali", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/10.svg" },
+  { name: "Cúcuta Deportivo", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/11.svg" },
+  { name: "Once Caldas", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/12.svg" },
+  { name: "América de Cali", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/13.svg" },
+  { name: "Deportes Tolima", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/14.svg" },
+  { name: "Atlético Nacional", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/15.svg" },
+  { name: "Millonarios", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/16.svg" },
+  { name: "Llaneros FC", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/17.svg" },
+  { name: "Independiente Santa Fe", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/18.svg" },
+  { name: "Águilas Doradas", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/19.svg" },
+  { name: "Independiente Medellín", crest: "https://raw.githubusercontent.com/barona42614/GESTORCONTECV/dbf2ab89f4388653ebbac12b2ebb9f00914cf26e/20.svg" }
+];
+let allTeams = [];
+let editingTeamIndex = null;
+function loadTeams() {
+  try {
+    const stored = localStorage.getItem('allTeams');
+    if (stored) { allTeams = JSON.parse(stored); }
+    else { allTeams = JSON.parse(JSON.stringify(originalTeams)); }
+  } catch (e) { allTeams = JSON.parse(JSON.stringify(originalTeams)); }
+}
+function saveTeams() { try { localStorage.setItem('allTeams', JSON.stringify(allTeams)); } catch (e) {} }
+function restoreOriginalTeams() {
+  if (confirm('¿Restaurar equipos originales?')) {
+    allTeams = JSON.parse(JSON.stringify(originalTeams));
+    saveTeams(); renderAllTeamsList();
+    showToast('✅ Equipos restaurados');
+  }
+}
+
+let currentModalType = '';
+let selectedTeams = { local: null, visit: null };
+let lastExportedImage = null;
+
+const diasSemana = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+function formatDateForDisplay(dateStr, timeStr) {
+  if (!dateStr) return 'FECHA POR DEFINIR';
+  const d = new Date(dateStr + 'T' + (timeStr || '00:00'));
+  const dia = diasSemana[d.getDay()];
+  const num = d.getDate().toString().padStart(2, '0');
+  const mes = meses[d.getMonth()];
+  const [h, m] = timeStr.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${dia} ${num} ${mes} | ${hour12.toString().padStart(2,'0')}:${m} ${ampm}`;
+}
+
+function openTeamModal(type) {
+  currentModalType = type;
+  document.getElementById('modalTitle').textContent = type === 'local' ? 'Seleccionar Equipo Local' : 'Seleccionar Equipo Visitante';
+  document.getElementById('teamList').innerHTML = allTeams.map((team, idx) => `
+    <div class="team-option" onclick="selectTeam(${idx})">
+      <img src="${team.crest}" alt="${team.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2240%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E?%3C/text%3E%3C/svg%3E'" />
+      <div class="team-option-name">${team.name}</div>
+    </div>
+  `).join('');
+  document.getElementById('teamModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeTeamModal() { document.getElementById('teamModal').classList.remove('show'); document.body.style.overflow = ''; }
+function selectTeam(teamIdx) {
+  const team = allTeams[teamIdx];
+  selectedTeams[currentModalType] = team;
+  const buttonId = currentModalType === 'local' ? 'localButton' : 'visitButton';
+  document.getElementById(buttonId).innerHTML = `
+    <img src="${team.crest}" alt="${team.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2240%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E?%3C/text%3E%3C/svg%3E'" />
+    <div class="team-info">
+      <div class="team-name">${team.name}</div>
+      <div class="team-hint">Haz clic para cambiar</div>
+    </div>
+  `;
+  closeTeamModal();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openManageTeams() {
+  if (currentUser?.rol !== 'admin') { showToast('️ Solo administradores'); return; }
+  document.getElementById('manageModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderAllTeamsList();
+  cancelForm();
+}
+function closeManageTeams() { document.getElementById('manageModal').classList.remove('show'); document.body.style.overflow = ''; }
+function showAddForm() {
+  editingTeamIndex = null;
+  document.getElementById('formTitle').textContent = '➕ Agregar Nuevo Equipo';
+  document.getElementById('newTeamName').value = '';
+  document.getElementById('newTeamLogo').value = '';
+  document.getElementById('manageForm').style.display = 'block';
+  document.getElementById('newTeamName').focus();
+}
+function showEditForm(index) {
+  editingTeamIndex = index;
+  const team = allTeams[index];
+  document.getElementById('formTitle').textContent = '✏️ Editar Equipo';
+  document.getElementById('newTeamName').value = team.name;
+  document.getElementById('newTeamLogo').value = team.crest;
+  document.getElementById('manageForm').style.display = 'block';
+  document.getElementById('manageForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function cancelForm() {
+  editingTeamIndex = null;
+  document.getElementById('manageForm').style.display = 'none';
+  document.getElementById('newTeamName').value = '';
+  document.getElementById('newTeamLogo').value = '';
+}
+function saveTeam() {
+  const name = document.getElementById('newTeamName').value.trim();
+  const logo = document.getElementById('newTeamLogo').value.trim();
+  if (!name || name.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
+  if (!logo) { showToast('⚠️ Ingresa el link del logo'); return; }
+  try { new URL(logo); } catch (e) { showToast('⚠️ Link no válido'); return; }
+  const exists = allTeams.some((t, idx) => t.name.toLowerCase() === name.toLowerCase() && idx !== editingTeamIndex);
+  if (exists) { showToast('⚠️ Ya existe un equipo con ese nombre'); return; }
+  if (editingTeamIndex !== null) { allTeams[editingTeamIndex] = { name, crest: logo }; showToast('✅ Equipo actualizado'); }
+  else { allTeams.push({ name, crest: logo }); showToast('✅ Equipo agregado'); }
+  saveTeams(); cancelForm(); renderAllTeamsList();
+}
+function deleteTeam(index) {
+  const team = allTeams[index];
+  if (confirm(`¿Eliminar "${team.name}"?`)) {
+    allTeams.splice(index, 1); saveTeams(); renderAllTeamsList();
+    showToast('🗑️ Equipo eliminado');
+  }
+}
+function renderAllTeamsList() {
+  const listContainer = document.getElementById('allTeamsList');
+  const countElement = document.getElementById('allTeamsCount');
+  countElement.textContent = allTeams.length;
+  if (allTeams.length === 0) { listContainer.innerHTML = '<div class="empty-state">No hay equipos</div>'; return; }
+  listContainer.innerHTML = allTeams.map((team, index) => `
+    <div class="item-card">
+      <div class="item-preview" style="width: clamp(45px, 10vw, 60px); height: clamp(45px, 10vw, 60px); border-radius: 50%;">
+        <img src="${team.crest}" alt="${team.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23d4af37%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2240%22 fill=%22%23000%22 text-anchor=%22middle%22 font-weight=%22bold%22%3E?%3C/text%3E%3C/svg%3E'" />
+      </div>
+      <div class="item-info">
+        <div class="item-name">${team.name}</div>
+        <div class="item-details">${team.crest}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-icon btn-edit" onclick="showEditForm(${index})" title="Editar">✏️</button>
+        <button class="btn-icon btn-delete" onclick="deleteTeam(${index})" title="Eliminar">️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function exportMatch() {
+  const canvas = getSelectedCanvas();
+  const fields = canvas.fields || { teams: true, date: true, time: true, stadium: true, competition: true, round: true };
+  
+  if (fields.teams && (!selectedTeams.local || !selectedTeams.visit)) {
+    showToast('⚠️ Selecciona ambos equipos');
+    return;
+  }
+  
+  showToast('⏳ Generando imagen...');
+  
+  try {
+    await document.fonts.load('700 40px "Poppins"');
+    await document.fonts.ready;
+    
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = canvas.width;
+    outCanvas.height = canvas.height;
+    const ctx = outCanvas.getContext('2d');
+    
+    const templateImg = await loadImage(canvas.url);
+    ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+    
+    const dateVal = document.getElementById('matchDate').value;
+    const timeVal = document.getElementById('matchTime').value;
+    const round = document.getElementById('roundName').value || 'FECHA 00';
+    const stadium = document.getElementById('stadiumName').value || 'NOMBRE DEL ESTADIO';
+    const datetimeDisplay = formatDateForDisplay(dateVal, timeVal);
+    
+    const scaleX = canvas.width / 1080;
+    const scaleY = canvas.height / 1350;
+    const minScale = Math.min(scaleX, scaleY);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'middle';
+    
+    if (fields.date || fields.time) {
+      ctx.font = `700 ${Math.round(32 * minScale)}px "Poppins", sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('EN VIVO', 110 * scaleX, 110 * scaleY);
+    }
+    
+    if (fields.round) {
+      ctx.font = `700 ${Math.round(32 * minScale)}px "Poppins", sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText(round.toUpperCase(), 970 * scaleX, 110 * scaleY);
+    }
+    
+    if (fields.date || fields.time) {
+      ctx.font = `700 ${Math.round(34 * minScale)}px "Poppins", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(datetimeDisplay, 540 * scaleX, 175 * scaleY);
+    }
+    
+    if (fields.teams && selectedTeams.local && selectedTeams.visit) {
+      const localBox = { x: 237 * scaleX, y: 424 * scaleY, w: 237 * scaleX, h: 212 * scaleY };
+      const visitBox = { x: 606 * scaleX, y: 424 * scaleY, w: 237 * scaleX, h: 212 * scaleY };
+      
+      await drawCrest(ctx, selectedTeams.local.crest, localBox.x, localBox.y, localBox.w, localBox.h);
+      await drawCrest(ctx, selectedTeams.visit.crest, visitBox.x, visitBox.y, visitBox.w, visitBox.h);
+      
+      ctx.font = `900 ${Math.round(80 * minScale)}px "Poppins", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('VS', 540 * scaleX, 530 * scaleY);
+    }
+    
+    if (fields.stadium) {
+      ctx.font = `700 ${Math.round(42 * minScale)}px "Poppins", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(stadium.toUpperCase(), 540 * scaleX, 720 * scaleY);
+    }
+    
+    const dataUrl = outCanvas.toDataURL('image/png');
+    lastExportedImage = { dataUrl: dataUrl, filename: 'proximo-partido.png' };
+    
+    document.getElementById('previewImage').src = dataUrl;
+    document.getElementById('previewModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    showToast('✅ Imagen generada');
+    
+  } catch (error) {
+    console.error('Error:', error);
+    showToast('❌ Error: ' + error.message);
+  }
+}
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      const img2 = new Image();
+      img2.onload = () => resolve(img2);
+      img2.onerror = () => reject(new Error('No se pudo cargar la plantilla'));
+      img2.src = url;
+    };
+    img.src = url;
+  });
+}
+
+function drawCrest(ctx, crestUrl, x, y, w, h) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const padding = Math.max(10, 15 * Math.min(w, h) / 212);
+      const radius = Math.max(8, 15 * Math.min(w, h) / 212);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+      const imgSize = Math.min(w, h) - padding * 2;
+      ctx.drawImage(img, x + (w - imgSize) / 2, y + (h - imgSize) / 2, imgSize, imgSize);
+      resolve();
+    };
+    img.onerror = () => {
+      const img2 = new Image();
+      img2.onload = () => {
+        const padding = Math.max(10, 15 * Math.min(w, h) / 212);
+        const radius = Math.max(8, 15 * Math.min(w, h) / 212);
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fill();
+        const imgSize = Math.min(w, h) - padding * 2;
+        ctx.drawImage(img2, x + (w - imgSize) / 2, y + (h - imgSize) / 2, imgSize, imgSize);
+        resolve();
+      };
+      img2.onerror = reject;
+      img2.src = crestUrl;
+    };
+    img.src = crestUrl;
+  });
+}
+
+function downloadPreview() {
+  if (!lastExportedImage) { showToast('⚠️ No hay imagen'); return; }
+  try {
+    const link = document.createElement('a');
+    link.href = lastExportedImage.dataUrl;
+    link.download = lastExportedImage.filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    setTimeout(() => document.body.removeChild(link), 200);
+    showToast('✅ Descarga iniciada');
+  } catch (error) { showToast('⚠️ Usa "Abrir en Pestaña"'); }
+}
+
+function openInNewTab() {
+  if (!lastExportedImage) { showToast('️ No hay imagen'); return; }
+  try {
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write(`<!DOCTYPE html><html><head><title>Imagen</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;font-family:Arial,sans-serif;padding:10px}.container{text-align:center;max-width:100%}img{max-width:100%;max-height:90vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}.instructions{color:#d4af37;margin-top:20px;font-size:clamp(14px,3vw,18px);font-weight:bold;padding:0 10px}.sub-instructions{color:#aaa;margin-top:10px;font-size:clamp(12px,2.5vw,14px);padding:0 10px}</style></head><body><div class="container"><img src="${lastExportedImage.dataUrl}" alt="Imagen"/><div class="instructions">👉 Mantén presionada (móvil) o clic derecho (PC)</div><div class="sub-instructions">y selecciona "Guardar imagen"</div></div></body></html>`);
+      newWindow.document.close();
+    } else { showToast('⚠️ Permite ventanas emergentes'); }
+  } catch (error) { showToast('❌ Error al abrir'); }
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ============================================
+// STREAM - MARCADOR + SELECCIÓN DE EQUIPOS + TIEMPOS + ESTADIO
+// ============================================
+let score1 = 0;
+let score2 = 0;
+let timerSeconds = 0;
+let timerInterval = null;
+let isTimerRunning = false;
+let extraTimeAdded = 0;
+let currentHalf = 1;
+let streamTeam1 = null;
+let streamTeam2 = null;
+let currentStreamTeamSlot = 1;
+
+function getPublicLink() {
+  const baseUrl = window.location.href.split('#')[0].split('?')[0];
+  return baseUrl + PUBLIC_HASH;
+}
+
+function updatePublicLinkDisplay() {
+  const url = getPublicLink();
+  const urlEl = document.getElementById('publicLinkUrl');
+  if (urlEl) urlEl.textContent = url;
+}
+
+function copyPublicLink() {
+  const url = getPublicLink();
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('✅ Link copiado al portapapeles');
+  }).catch(() => {
+    const input = document.createElement('input');
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    showToast('✅ Link copiado al portapapeles');
+  });
+}
+
+function openPublicLink() {
+  window.open(getPublicLink(), '_blank');
+}
+
+function testPublicLink() {
+  window.open(getPublicLink(), '_blank');
+  showToast('🧪 Abriendo vista pública en nueva pestaña');
+}
+
+function openStreamTeamModal(slot) {
+  currentStreamTeamSlot = slot;
+  const modal = document.getElementById('streamTeamModal');
+  const list = document.getElementById('streamTeamList');
+  const title = document.getElementById('streamTeamModalTitle');
+  
+  title.textContent = slot === 1 ? 'Seleccionar Equipo Local' : 'Seleccionar Equipo Visitante';
+  
+  list.innerHTML = teamsList.map((team, idx) => `
+    <div class="team-option" onclick="selectStreamTeam(${idx})">
+      <img src="${team.crest}" alt="${team.name}" onerror="this.src='${defaultPlaceholder}'" />
+      <div class="team-option-name">${team.name}</div>
+    </div>
+  `).join('');
+  
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStreamTeamModal() {
+  document.getElementById('streamTeamModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function selectStreamTeam(idx) {
+  const team = teamsList[idx];
+  
+  if (currentStreamTeamSlot === 1) {
+    streamTeam1 = team;
+    document.getElementById('streamTeamName1').textContent = team.name;
+    document.getElementById('streamTeamCrest1').src = team.crest;
+  } else {
+    streamTeam2 = team;
+    document.getElementById('streamTeamName2').textContent = team.name;
+    document.getElementById('streamTeamCrest2').src = team.crest;
+  }
+  
+  syncToPublic();
+  closeStreamTeamModal();
+  showToast(`✅ ${team.name} seleccionado`);
+}
+
+function syncToPublic() {
+  streamState.team1 = streamTeam1 ? streamTeam1.name : 'Equipo Local';
+  streamState.team2 = streamTeam2 ? streamTeam2.name : 'Equipo Visitante';
+  streamState.crest1 = streamTeam1 ? streamTeam1.crest : defaultPlaceholder;
+  streamState.crest2 = streamTeam2 ? streamTeam2.crest : defaultPlaceholder;
+  streamState.score1 = score1;
+  streamState.score2 = score2;
+  streamState.timerSeconds = timerSeconds;
+  streamState.extraTime = extraTimeAdded;
+  streamState.isRunning = isTimerRunning;
+  streamState.currentHalf = currentHalf;
+  saveStreamState();
+}
+
+function setHalf(half) {
+  if (isTimerRunning) {
+    showToast('️ Detén el cronómetro antes de cambiar de tiempo');
+    return;
+  }
+  
+  currentHalf = half;
+  
+  const btn1 = document.getElementById('halfBtn1');
+  const btn2 = document.getElementById('halfBtn2');
+  
+  btn1.className = 'half-btn' + (half === 1 ? ' active' : '');
+  btn2.className = 'half-btn' + (half === 2 ? ' active-second' : '');
+  
+  if (half === 2 && timerSeconds < 2700) {
+    timerSeconds = 2700;
+    updateTimerDisplay();
+    showToast('️ Segundo tiempo iniciado desde 45:00');
+  } else if (half === 1) {
+    timerSeconds = 0;
+    updateTimerDisplay();
+    showToast('⏱️ Primer tiempo reiniciado a 00:00');
+  }
+  
+  syncToPublic();
+}
+
+function initStreamControls() {
+  loadStadiums();
+  loadStreamState();
+  updateStadiumSelect();
+  
+  if (streamState.stadiumId) {
+    const select = document.getElementById('stadiumSelect');
+    select.value = streamState.stadiumId;
+  }
+  
+  if (streamState.team1 && streamState.team1 !== 'Equipo Local') {
+    const found = teamsList.find(t => t.name === streamState.team1);
+    if (found) {
+      streamTeam1 = found;
+      document.getElementById('streamTeamName1').textContent = found.name;
+      document.getElementById('streamTeamCrest1').src = found.crest;
+    }
+  }
+  if (streamState.team2 && streamState.team2 !== 'Equipo Visitante') {
+    const found = teamsList.find(t => t.name === streamState.team2);
+    if (found) {
+      streamTeam2 = found;
+      document.getElementById('streamTeamName2').textContent = found.name;
+      document.getElementById('streamTeamCrest2').src = found.crest;
+    }
+  }
+  
+  currentHalf = streamState.currentHalf || 1;
+  const btn1 = document.getElementById('halfBtn1');
+  const btn2 = document.getElementById('halfBtn2');
+  btn1.className = 'half-btn' + (currentHalf === 1 ? ' active' : '');
+  btn2.className = 'half-btn' + (currentHalf === 2 ? ' active-second' : '');
+  
+  score1 = streamState.score1 || 0;
+  score2 = streamState.score2 || 0;
+  timerSeconds = streamState.timerSeconds || 0;
+  extraTimeAdded = streamState.extraTime || 0;
+  isTimerRunning = streamState.isRunning || false;
+  
+  const s1El = document.getElementById('score1');
+  const s2El = document.getElementById('score2');
+  if (s1El) s1El.textContent = score1;
+  if (s2El) s2El.textContent = score2;
+  
+  updateTimerDisplay();
+  
+  const extraValEl = document.getElementById('extraTimeValue');
+  const extraDispEl = document.getElementById('extraTimeDisplay');
+  if (extraValEl) extraValEl.textContent = extraTimeAdded;
+  if (extraDispEl) extraDispEl.style.display = extraTimeAdded > 0 ? 'block' : 'none';
+  
+  const timerStartBtn = document.getElementById('timerStartBtn');
+  const timerDisplay = document.getElementById('timerDisplay');
+  if (isTimerRunning) {
+    if (timerStartBtn) {
+      timerStartBtn.textContent = '⏸️ Pausar';
+      timerStartBtn.className = 'btn danger';
+    }
+    if (timerDisplay) timerDisplay.classList.add('running');
+    
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+      syncToPublic();
+    }, 1000);
+  } else {
+    if (timerStartBtn) {
+      timerStartBtn.textContent = '▶️ Iniciar';
+      timerStartBtn.className = 'btn success';
+    }
+    if (timerDisplay) timerDisplay.classList.remove('running');
+  }
+  
+  updatePublicLinkDisplay();
+}
+
+function updateScore(team, change) {
+  const scoreEl = document.getElementById(team === 1 ? 'score1' : 'score2');
+  if (!scoreEl) return;
+  
+  const oldScore = parseInt(scoreEl.textContent) || 0;
+  const newScore = Math.max(0, oldScore + change);
+  
+  if (team === 1) score1 = newScore;
+  else score2 = newScore;
+  
+  scoreEl.textContent = newScore;
+  
+  if (change > 0 && newScore > oldScore) {
+    scoreEl.classList.remove('goal-scored');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('goal-scored');
+    showGoalAnimation(team);
+    setTimeout(() => { scoreEl.classList.remove('goal-scored'); }, 600);
+  }
+  
+  syncToPublic();
+}
+
+function showGoalAnimation(team) {
+  const overlay = document.getElementById('goalOverlay');
+  const goalText = document.getElementById('goalText');
+  const teamName = team === 1 
+    ? (streamTeam1 ? streamTeam1.name : 'Equipo Local')
+    : (streamTeam2 ? streamTeam2.name : 'Equipo Visitante');
+  
+  goalText.textContent = `⚽ ¡GOOOL!\n${teamName}`;
+  goalText.style.whiteSpace = 'pre-line';
+  
+  overlay.classList.add('show');
+  
+  setTimeout(() => {
+    overlay.classList.remove('show');
+  }, 2000);
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timerStartBtn');
+  const timerDisplay = document.getElementById('timerDisplay');
+  
+  if (isTimerRunning) {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    if (btn) {
+      btn.textContent = '▶️ Continuar';
+      btn.className = 'btn success';
+    }
+    if (timerDisplay) timerDisplay.classList.remove('running');
+  } else {
+    isTimerRunning = true;
+    if (btn) {
+      btn.textContent = '⏸️ Pausar';
+      btn.className = 'btn danger';
+    }
+    if (timerDisplay) timerDisplay.classList.add('running');
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+      syncToPublic();
+    }, 1000);
+  }
+  syncToPublic();
+}
+
+function resetTimer() {
+  if (isTimerRunning) {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+  }
+  timerSeconds = 0;
+  extraTimeAdded = 0;
+  updateTimerDisplay();
+  const btn = document.getElementById('timerStartBtn');
+  if (btn) {
+    btn.textContent = '▶️ Iniciar';
+    btn.className = 'btn success';
+  }
+  const timerDisplay = document.getElementById('timerDisplay');
+  if (timerDisplay) timerDisplay.classList.remove('running');
+  document.getElementById('extraTimeBadge').classList.remove('show');
+  document.getElementById('extraTimeDisplay').style.display = 'none';
+  document.getElementById('extraTimeInput').value = '1';
+  syncToPublic();
+}
+
+function updateTimerDisplay() {
+  const totalMinutes = Math.floor(timerSeconds / 60);
+  const seconds = timerSeconds % 60;
+  const display = `${totalMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const timerEl = document.getElementById('timerDisplay');
+  if (timerEl) timerEl.textContent = display;
+}
+
+function addExtraTime() {
+  const input = document.getElementById('extraTimeInput');
+  const minutes = parseInt(input.value);
+  
+  if (!minutes || minutes < 1 || minutes > 30) {
+    showToast('⚠️ Ingresa entre 1 y 30 minutos');
+    return;
+  }
+  
+  extraTimeAdded += minutes;
+  timerSeconds += minutes * 60;
+  updateTimerDisplay();
+  
+  document.getElementById('extraTimeValue').textContent = extraTimeAdded;
+  document.getElementById('extraTimeDisplay').style.display = 'block';
+  
+  input.value = '1';
+  showToast(`✅ ${minutes} minuto(s) de tiempo extra agregado(s)`);
+  syncToPublic();
+}
+
+// ============================================
+// INICIALIZACIÓN PRINCIPAL
+// ============================================
+if (isPublicMode()) {
+  document.body.classList.add('public-mode');
+  initPublicMode();
+} else {
+  document.getElementById('matchDate').value = new Date().toISOString().split('T')[0];
+  loadUsers();
+  loadTeams();
+  loadCanvases();
+  renderCanvasList();
+  applyCanvasFields();
+  checkSession();
+}
+
+document.getElementById('teamModal').addEventListener('click', (e) => { if (e.target.id === 'teamModal') closeTeamModal(); });
+document.getElementById('streamTeamModal').addEventListener('click', (e) => { if (e.target.id === 'streamTeamModal') closeStreamTeamModal(); });
+document.getElementById('stadiumModal').addEventListener('click', (e) => { if (e.target.id === 'stadiumModal') closeManageStadiums(); });
+document.getElementById('manageModal').addEventListener('click', (e) => { if (e.target.id === 'manageModal') closeManageTeams(); });
+document.getElementById('canvasModal').addEventListener('click', (e) => { if (e.target.id === 'canvasModal') closeManageCanvases(); });
+document.getElementById('usersModal').addEventListener('click', (e) => { if (e.target.id === 'usersModal') closeManageUsers(); });
+document.getElementById('previewModal').addEventListener('click', (e) => { if (e.target.id === 'previewModal') closePreview(); });
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeTeamModal();
+    closeStreamTeamModal();
+    closeManageStadiums();
+    closeManageTeams();
+    closeManageCanvases();
+    closeManageUsers();
+    closePreview();
+  }
+});
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) e.preventDefault();
+  lastTouchEnd = now;
+}, false);
+
+document.getElementById('newTeamLogo').addEventListener('keypress', (e) => { if (e.key === 'Enter') saveTeam(); });
+document.getElementById('canvasUrl').addEventListener('keypress', (e) => { if (e.key === 'Enter') saveCanvas(); });
+document.getElementById('confirmPass').addEventListener('keypress', (e) => { if (e.key === 'Enter') changePassword(); });
+document.getElementById('userPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') saveUser(); });
+</script>
+
+</body>
+</html>
