@@ -80,30 +80,30 @@
     background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.5) 100%);
   }
 
-  /* Marcador superpuesto - estilo del video */
+  /* Marcador superpuesto - POSICIÓN MÁS ARRIBA */
   .public-scoreboard-overlay {
     position: absolute;
-    top: 50%;
+    top: 12%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 900px;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 850px;
     background: linear-gradient(145deg, rgba(10,60,30,0.95), rgba(5,40,20,0.95));
     border: 2px solid #d4af37;
     border-radius: 12px;
-    padding: clamp(15px, 2vw, 25px);
+    padding: clamp(12px, 1.5vw, 20px);
     box-shadow: 0 10px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212,175,55,0.3);
     z-index: 10;
   }
 
   .scoreboard-top-title {
     text-align: center;
-    font-size: clamp(10px, 1.2vw, 14px);
+    font-size: clamp(9px, 1vw, 13px);
     color: #d4af37;
     text-transform: uppercase;
     letter-spacing: 3px;
     font-weight: 700;
-    margin-bottom: clamp(10px, 1.5vw, 18px);
+    margin-bottom: clamp(8px, 1vw, 14px);
   }
 
   .scoreboard-teams-row {
@@ -111,29 +111,29 @@
     grid-template-columns: 1fr auto 1fr;
     gap: clamp(10px, 2vw, 20px);
     align-items: center;
-    margin-bottom: clamp(10px, 1.5vw, 15px);
+    margin-bottom: clamp(8px, 1vw, 12px);
   }
 
   .scoreboard-team {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(4px, 0.5vw, 8px);
+    gap: clamp(3px, 0.4vw, 6px);
   }
 
   .scoreboard-team-crest {
-    width: clamp(50px, 7vw, 90px);
-    height: clamp(50px, 7vw, 90px);
+    width: clamp(45px, 6vw, 80px);
+    height: clamp(45px, 6vw, 80px);
     border-radius: 50%;
     background: #fff;
-    padding: clamp(3px, 0.4vw, 6px);
+    padding: clamp(2px, 0.3vw, 5px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 15px rgba(212,175,55,0.4);
     border: 2px solid #d4af37;
     object-fit: contain;
   }
 
   .scoreboard-team-name {
-    font-size: clamp(10px, 1.3vw, 16px);
+    font-size: clamp(9px, 1.1vw, 14px);
     font-weight: 800;
     color: #fff;
     text-transform: uppercase;
@@ -143,7 +143,7 @@
   }
 
   .scoreboard-vs {
-    font-size: clamp(20px, 3vw, 36px);
+    font-size: clamp(18px, 2.5vw, 32px);
     font-weight: 900;
     color: #d4af37;
     text-shadow: 0 0 15px rgba(212,175,55,0.7);
@@ -153,11 +153,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: clamp(10px, 2vw, 20px);
-    margin-bottom: clamp(10px, 1.5vw, 15px);
+    margin-bottom: clamp(8px, 1vw, 12px);
   }
 
   .scoreboard-score {
-    font-size: clamp(40px, 6vw, 80px);
+    font-size: clamp(35px, 5vw, 70px);
     font-weight: 900;
     color: #fff;
     text-align: center;
@@ -183,21 +183,21 @@
     background: rgba(0,0,0,0.4);
     border: 1px solid rgba(212,175,55,0.4);
     border-radius: 8px;
-    padding: clamp(8px, 1vw, 15px);
+    padding: clamp(6px, 0.8vw, 12px);
     text-align: center;
   }
 
   .scoreboard-half-label {
-    font-size: clamp(9px, 1vw, 13px);
+    font-size: clamp(8px, 0.9vw, 12px);
     color: #d4af37;
     text-transform: uppercase;
     letter-spacing: 2px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .scoreboard-timer {
-    font-size: clamp(28px, 4vw, 56px);
+    font-size: clamp(24px, 3.5vw, 50px);
     font-weight: 900;
     color: #fff;
     font-family: 'Poppins', monospace;
@@ -1726,7 +1726,7 @@
     <div style="margin-bottom:4px;">🔧 Modo Público</div>
     <div>Última sync: <span id="debugLastSync">-</span></div>
     <button onclick="forcePublicRefresh()">🔄 Forzar</button>
-    <button onclick="simulateGoal()"> Gol Test</button>
+    <button onclick="simulateGoal()">⚽ Gol Test</button>
   </div>
 </div>
 
@@ -1772,7 +1772,7 @@
         <span>Próximo Partido</span>
       </button>
       <button class="nav-tab" onclick="switchTab('stream', this)">
-        <span class="tab-icon">📡</span>
+        <span class="tab-icon"></span>
         <span>Stream</span>
       </button>
       <button class="nav-tab" onclick="switchTab('perfil', this)">
@@ -1794,7 +1794,7 @@
           </div>
         </div>
         <div class="user-actions">
-          <button class="btn-user admin-only" onclick="openManageUsers()">👥 Usuarios</button>
+          <button class="btn-user admin-only" onclick="openManageUsers()"> Usuarios</button>
           <button class="btn-user admin-only" onclick="openManageStadiums()">🏟️ Estadios</button>
           <button class="btn-user logout" onclick="doLogout()">🚪 Salir</button>
         </div>
@@ -1842,15 +1842,15 @@
             <input type="time" id="matchTime" value="20:00" />
           </div>
           <div class="control-field full" id="fieldStadium">
-            <label>️ Estadio</label>
+            <label>🏟️ Estadio</label>
             <input type="text" id="stadiumName" value="NOMBRE DEL ESTADIO" />
           </div>
           <div class="control-field" id="fieldCompetition">
-            <label> Competición</label>
+            <label>🏆 Competición</label>
             <input type="text" id="competitionName" value="Liga BetPlay Dimayor" />
           </div>
           <div class="control-field" id="fieldRound">
-            <label> Jornada</label>
+            <label>📋 Jornada</label>
             <input type="text" id="roundName" value="FECHA 12" />
           </div>
         </div>
@@ -1858,7 +1858,7 @@
 
       <div class="action-bar">
         <button class="btn" onclick="exportMatch()">📸 Generar Imagen</button>
-        <button class="btn manage admin-only" onclick="openManageTeams()">️ Configurar Equipos</button>
+        <button class="btn manage admin-only" onclick="openManageTeams()">⚙️ Configurar Equipos</button>
       </div>
     </div>
 
@@ -1870,8 +1870,8 @@
         <div class="public-link-title">🔗 Link Público (Sin Login)</div>
         <div class="public-link-url" id="publicLinkUrl">Cargando...</div>
         <div class="public-link-actions">
-          <button class="btn copy-link" onclick="copyPublicLink()"> Copiar Link</button>
-          <button class="btn secondary" onclick="openPublicLink()">️ Abrir en Nueva Pestaña</button>
+          <button class="btn copy-link" onclick="copyPublicLink()">📋 Copiar Link</button>
+          <button class="btn secondary" onclick="openPublicLink()">👁️ Abrir en Nueva Pestaña</button>
           <button class="btn manage" onclick="testPublicLink()">🧪 Probar</button>
         </div>
       </div>
@@ -1922,7 +1922,7 @@
           
           <div class="timer-section">
             <div class="timer-header">
-              <div class="timer-title">️ Tiempo del Partido</div>
+              <div class="timer-title">⏱️ Tiempo del Partido</div>
               <div class="half-selector">
                 <button class="half-btn active" id="halfBtn1" onclick="setHalf(1)">1er Tiempo</button>
                 <button class="half-btn" id="halfBtn2" onclick="setHalf(2)">2do Tiempo</button>
@@ -2011,11 +2011,11 @@
   </div>
 </div>
 
-<!-- MODAL GESTIÓN ESTADIOS -->
+<!-- MODAL GESTIÓN ESTADIOS (SOLO ADMIN) -->
 <div class="modal-overlay" id="stadiumModal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeManageStadiums()">×</button>
-    <div class="modal-title">🏟️ Gestionar Estadios (Fondos 16:9)</div>
+    <div class="modal-title">🏟️ Gestionar Estadios (Solo Admin)</div>
     
     <div class="manage-form">
       <div class="manage-form-title"> Agregar Nuevo Estadio</div>
@@ -2024,12 +2024,12 @@
         <input type="text" id="stadiumNameInput" placeholder="Ej: Estadio El Campín" maxlength="50" />
       </div>
       <div class="form-group">
-        <label>Link de la Foto (URL - formato 16:9)</label>
+        <label>URL de la Imagen (formato 16:9)</label>
         <input type="url" id="stadiumPhotoInput" placeholder="https://ejemplo.com/foto.jpg" />
       </div>
       <div class="form-actions">
         <button class="btn" onclick="saveStadium()">💾 Guardar</button>
-        <button class="btn secondary" onclick="cancelStadiumForm()">❌ Cancelar</button>
+        <button class="btn secondary" onclick="cancelStadiumForm()"> Cancelar</button>
       </div>
     </div>
     
@@ -2050,12 +2050,12 @@
 <div class="modal-overlay" id="usersModal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeManageUsers()">×</button>
-    <div class="modal-title"> Gestionar Usuarios</div>
+    <div class="modal-title">👥 Gestionar Usuarios</div>
     <div class="manage-header">
-      <button class="btn" onclick="showAddUserForm()">➕ Registrar Usuario</button>
+      <button class="btn" onclick="showAddUserForm()"> Registrar Usuario</button>
     </div>
     <div class="manage-form" id="userForm" style="display: none;">
-      <div class="manage-form-title" id="userFormTitle">➕ Registrar Nuevo Usuario</div>
+      <div class="manage-form-title" id="userFormTitle"> Registrar Nuevo Usuario</div>
       <div class="form-group">
         <label>Nombre Completo</label>
         <input type="text" id="userFullName" placeholder="Ej: Juan Pérez" maxlength="50" />
@@ -2119,13 +2119,13 @@
         <input type="url" id="newTeamLogo" placeholder="https://ejemplo.com/logo.svg" />
       </div>
       <div class="form-actions">
-        <button class="btn" onclick="saveTeam()">💾 Guardar</button>
+        <button class="btn" onclick="saveTeam()"> Guardar</button>
         <button class="btn secondary" onclick="cancelForm()">❌ Cancelar</button>
       </div>
     </div>
     <div class="all-items-section">
       <div class="all-items-title">
-        <span> Todos los Equipos</span>
+        <span>📋 Todos los Equipos</span>
         <span class="all-items-count" id="allTeamsCount">0</span>
       </div>
       <div id="allTeamsList"></div>
@@ -2173,7 +2173,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn" onclick="saveCanvas()"> Guardar</button>
+        <button class="btn" onclick="saveCanvas()">💾 Guardar</button>
         <button class="btn secondary" onclick="cancelCanvasForm()">❌ Cancelar</button>
       </div>
     </div>
@@ -2190,11 +2190,11 @@
 <div class="preview-modal" id="previewModal">
   <div class="preview-content">
     <div class="preview-title">✅ Imagen Generada</div>
-    <div class="preview-hint"> Haz clic derecho sobre la imagen y selecciona "Guardar imagen como..."</div>
+    <div class="preview-hint">💡 Haz clic derecho sobre la imagen y selecciona "Guardar imagen como..."</div>
     <img id="previewImage" src="" alt="Vista previa" />
     <div class="preview-actions">
       <button class="btn" onclick="downloadPreview()">💾 Descargar</button>
-      <button class="btn secondary" onclick="openInNewTab()">👁️ Abrir en Pestaña</button>
+      <button class="btn secondary" onclick="openInNewTab()">️ Abrir en Pestaña</button>
       <button class="btn secondary" onclick="closePreview()">Cerrar</button>
     </div>
   </div>
@@ -2322,7 +2322,7 @@ function loadStreamState() {
 let publicPollInterval = null;
 
 function initPublicMode() {
-  console.log('🌐 Modo público activado');
+  console.log(' Modo público activado');
   loadStadiums();
   loadStreamState();
   renderPublicView();
@@ -2554,7 +2554,7 @@ function changePassword() {
   const newPass = document.getElementById('newPass').value;
   const confirmPass = document.getElementById('confirmPass').value;
   if (!currentPass) { showToast('⚠️ Ingresa tu contraseña actual'); return; }
-  if (currentPass !== currentUser.password) { showToast(' La contraseña actual es incorrecta'); return; }
+  if (currentPass !== currentUser.password) { showToast('❌ La contraseña actual es incorrecta'); return; }
   if (!newPass) { showToast('⚠️ Ingresa la nueva contraseña'); return; }
   if (newPass.length < 4) { showToast('⚠️ La contraseña debe tener al menos 4 caracteres'); return; }
   if (newPass !== confirmPass) { showToast('❌ Las contraseñas nuevas no coinciden'); return; }
@@ -2617,10 +2617,10 @@ function saveUser() {
   const rol = document.getElementById('userRoleSelect').value;
   if (!nombre || nombre.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
   if (!usuario || usuario.length < 3) { showToast('⚠️ Usuario mínimo 3 caracteres'); return; }
-  if (!/^[a-z0-9_]+$/.test(usuario)) { showToast('⚠️ Usuario solo puede tener letras, números y guión bajo'); return; }
+  if (!/^[a-z0-9_]+$/.test(usuario)) { showToast('️ Usuario solo puede tener letras, números y guión bajo'); return; }
   if (!password || password.length < 4) { showToast('⚠️ Contraseña mínimo 4 caracteres'); return; }
   const exists = allUsers.some((u, idx) => u.usuario.toLowerCase() === usuario && idx !== editingUserIndex);
-  if (exists) { showToast('⚠️ Ya existe un usuario con ese nombre'); return; }
+  if (exists) { showToast('️ Ya existe un usuario con ese nombre'); return; }
   if (editingUserIndex !== null) {
     const oldUser = allUsers[editingUserIndex];
     if (oldUser.id === currentUser.id) {
@@ -2641,9 +2641,9 @@ function deleteUser(index) {
   const user = allUsers[index];
   if (user.rol === 'admin') {
     const adminCount = allUsers.filter(u => u.rol === 'admin').length;
-    if (adminCount <= 1) { showToast('⚠️ No se puede eliminar el último administrador'); return; }
+    if (adminCount <= 1) { showToast('️ No se puede eliminar el último administrador'); return; }
   }
-  if (user.id === currentUser.id) { showToast('️ No puedes eliminar tu propio usuario'); return; }
+  if (user.id === currentUser.id) { showToast('⚠️ No puedes eliminar tu propio usuario'); return; }
   if (confirm(`¿Eliminar al usuario "${user.nombre}"?`)) {
     allUsers.splice(index, 1); saveUsers(); renderAllUsersList();
     showToast('🗑️ Usuario eliminado');
@@ -2676,12 +2676,16 @@ function renderAllUsersList() {
 }
 
 // ============================================
-// GESTIÓN DE ESTADIOS
+// GESTIÓN DE ESTADIOS (SOLO ADMIN)
 // ============================================
 let editingStadiumIndex = null;
 
 function openManageStadiums() {
-  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
+  // Verificación de rol admin
+  if (!currentUser || currentUser.rol !== 'admin') {
+    showToast('️ Solo administradores pueden gestionar estadios');
+    return;
+  }
   document.getElementById('stadiumModal').classList.add('show');
   document.body.style.overflow = 'hidden';
   renderAllStadiumsList();
@@ -2694,12 +2698,18 @@ function closeManageStadiums() {
 }
 
 function saveStadium() {
+  // Verificación de rol admin
+  if (!currentUser || currentUser.rol !== 'admin') {
+    showToast('️ Solo administradores pueden agregar estadios');
+    return;
+  }
+  
   const name = document.getElementById('stadiumNameInput').value.trim();
   const photo = document.getElementById('stadiumPhotoInput').value.trim();
   
-  if (!name || name.length < 3) { showToast('⚠️ Nombre mínimo 3 caracteres'); return; }
-  if (!photo) { showToast('⚠️ Ingresa el link de la foto'); return; }
-  try { new URL(photo); } catch (e) { showToast('⚠️ Link no válido'); return; }
+  if (!name || name.length < 3) { showToast('️ Nombre mínimo 3 caracteres'); return; }
+  if (!photo) { showToast('⚠️ Ingresa la URL de la imagen'); return; }
+  try { new URL(photo); } catch (e) { showToast('⚠️ URL no válida'); return; }
   
   const exists = stadiumsList.some((s, idx) => s.name.toLowerCase() === name.toLowerCase() && idx !== editingStadiumIndex);
   if (exists) { showToast('⚠️ Ya existe un estadio con ese nombre'); return; }
@@ -2726,6 +2736,12 @@ function cancelStadiumForm() {
 }
 
 function editStadium(index) {
+  // Verificación de rol admin
+  if (!currentUser || currentUser.rol !== 'admin') {
+    showToast('️ Solo administradores pueden editar estadios');
+    return;
+  }
+  
   editingStadiumIndex = index;
   const stadium = stadiumsList[index];
   document.getElementById('stadiumNameInput').value = stadium.name;
@@ -2733,6 +2749,12 @@ function editStadium(index) {
 }
 
 function deleteStadium(index) {
+  // Verificación de rol admin
+  if (!currentUser || currentUser.rol !== 'admin') {
+    showToast('⚠️ Solo administradores pueden eliminar estadios');
+    return;
+  }
+  
   const stadium = stadiumsList[index];
   if (confirm(`¿Eliminar "${stadium.name}"?`)) {
     stadiumsList.splice(index, 1);
@@ -2762,7 +2784,7 @@ function renderAllStadiumsList() {
         <div class="item-name">${stadium.name}</div>
       </div>
       <div class="item-actions">
-        <button class="btn-icon btn-edit" onclick="editStadium(${index})" title="Editar">️</button>
+        <button class="btn-icon btn-edit" onclick="editStadium(${index})" title="Editar">✏️</button>
         <button class="btn-icon btn-delete" onclick="deleteStadium(${index})" title="Eliminar">🗑️</button>
       </div>
     </div>
@@ -2879,7 +2901,7 @@ function selectCanvas(id) {
 }
 
 function openManageCanvases() {
-  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
+  if (currentUser?.rol !== 'admin') { showToast('️ Solo administradores'); return; }
   document.getElementById('canvasModal').classList.add('show');
   document.body.style.overflow = 'hidden';
   renderAllCanvasesList();
@@ -2994,7 +3016,7 @@ function renderAllCanvasesList() {
           <div class="item-details">${canvas.width}×${canvas.height}px • ${activeFields}/${totalFields} campos</div>
         </div>
         <div class="item-actions">
-          <button class="btn-icon btn-edit" onclick="showEditCanvasForm(${index})" title="Editar">✏️</button>
+          <button class="btn-icon btn-edit" onclick="showEditCanvasForm(${index})" title="Editar">️</button>
           <button class="btn-icon btn-delete" onclick="deleteCanvas(${index})" title="Eliminar">🗑️</button>
         </div>
       </div>
@@ -3097,7 +3119,7 @@ function showToast(msg) {
 }
 
 function openManageTeams() {
-  if (currentUser?.rol !== 'admin') { showToast('️ Solo administradores'); return; }
+  if (currentUser?.rol !== 'admin') { showToast('⚠️ Solo administradores'); return; }
   document.getElementById('manageModal').classList.add('show');
   document.body.style.overflow = 'hidden';
   renderAllTeamsList();
@@ -3162,7 +3184,7 @@ function renderAllTeamsList() {
       </div>
       <div class="item-actions">
         <button class="btn-icon btn-edit" onclick="showEditForm(${index})" title="Editar">✏️</button>
-        <button class="btn-icon btn-delete" onclick="deleteTeam(${index})" title="Eliminar">️</button>
+        <button class="btn-icon btn-delete" onclick="deleteTeam(${index})" title="Eliminar">🗑️</button>
       </div>
     </div>
   `).join('');
@@ -3341,11 +3363,11 @@ function downloadPreview() {
 }
 
 function openInNewTab() {
-  if (!lastExportedImage) { showToast('️ No hay imagen'); return; }
+  if (!lastExportedImage) { showToast('⚠️ No hay imagen'); return; }
   try {
     const newWindow = window.open('', '_blank');
     if (newWindow) {
-      newWindow.document.write(`<!DOCTYPE html><html><head><title>Imagen</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;font-family:Arial,sans-serif;padding:10px}.container{text-align:center;max-width:100%}img{max-width:100%;max-height:90vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}.instructions{color:#d4af37;margin-top:20px;font-size:clamp(14px,3vw,18px);font-weight:bold;padding:0 10px}.sub-instructions{color:#aaa;margin-top:10px;font-size:clamp(12px,2.5vw,14px);padding:0 10px}</style></head><body><div class="container"><img src="${lastExportedImage.dataUrl}" alt="Imagen"/><div class="instructions">👉 Mantén presionada (móvil) o clic derecho (PC)</div><div class="sub-instructions">y selecciona "Guardar imagen"</div></div></body></html>`);
+      newWindow.document.write(`<!DOCTYPE html><html><head><title>Imagen</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;font-family:Arial,sans-serif;padding:10px}.container{text-align:center;max-width:100%}img{max-width:100%;max-height:90vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}.instructions{color:#d4af37;margin-top:20px;font-size:clamp(14px,3vw,18px);font-weight:bold;padding:0 10px}.sub-instructions{color:#aaa;margin-top:10px;font-size:clamp(12px,2.5vw,14px);padding:0 10px}</style></head><body><div class="container"><img src="${lastExportedImage.dataUrl}" alt="Imagen"/><div class="instructions"> Mantén presionada (móvil) o clic derecho (PC)</div><div class="sub-instructions">y selecciona "Guardar imagen"</div></div></body></html>`);
       newWindow.document.close();
     } else { showToast('⚠️ Permite ventanas emergentes'); }
   } catch (error) { showToast('❌ Error al abrir'); }
@@ -3402,7 +3424,7 @@ function openPublicLink() {
 
 function testPublicLink() {
   window.open(getPublicLink(), '_blank');
-  showToast('🧪 Abriendo vista pública en nueva pestaña');
+  showToast(' Abriendo vista pública en nueva pestaña');
 }
 
 function openStreamTeamModal(slot) {
